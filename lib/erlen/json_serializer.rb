@@ -6,7 +6,7 @@ module Erlen
     def self.from_json(json, schemaClass)
       data = JSON.parse(json)
 
-      data_to_payload(data, schemaClass)
+      hash_to_payload(data, schemaClass)
     end
 
     def self.to_json(payload)

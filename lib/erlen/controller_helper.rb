@@ -30,11 +30,14 @@ module Erlen
           @response_schema = response_schema
           if request_schema
             begin
-              json = JSON.parse(request.body)
+              data = request.request_parameters
+              data = data[:data] if data.is_a?(Hash)
+
+              @request_payload = Erlen::JSONSerializer.from_json(data, request_schema)
             rescue JSON::ParserError
               raise InvalidRequestError.new("Could not parse request body")
             end
-            @request_payload = request_schema.new(json)
+
             raise ValidationError.from_errors(@request_payload.errors) unless @request_payload.valid?
           end
         end
@@ -96,8 +99,10 @@ module Erlen
     # request body or response body, validated against the schema. This
     # particular method is only used to retrieve the request payload.
     def request_payload
-      # raise NoPayloadError if @request_payload.nil?
-      @request_schema.import(@request_payload) if @request_payload
+      @request_payload
+
+      #raise NoPayloadError if @request_payload.nil?
+      #@request_schema.import(@request_payload) if @request_payload
     end
 
     # Reads the current response payload, an instance of BaseSchema class.

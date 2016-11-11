@@ -43,7 +43,7 @@ module Erlen
     def validate(value)
       if options[:required] && value.is_a?(Undefined)
         raise ValidationError.new("#{name} is required")
-      elsif value.is_a?(Undefined)
+      elsif value.is_a?(Undefined) || value.nil?
         # then fine
       elsif type == Boolean
         if (value != true && value != false)

@@ -213,7 +213,7 @@ module Erlen
         @attributes[name] = value
         @valid = nil # a value is dirty so not valid anymore until next validation
       else
-        raise NoAttributeError unless @attributes.include?(name)
+        raise NoAttributeError.new(name) unless @attributes.include?(name)
       end
     end
 

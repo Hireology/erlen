@@ -17,7 +17,7 @@ module Erlen
     def self.convert_hash_keys(value)
       case value
       when Array
-        value.map(&:convert_hash_keys)
+        value.map { |v| convert_hash_keys(v) }
       when Hash
         Hash[value.map { |k, v| [underscore(k.to_s).to_sym, convert_hash_keys(v)] }]
       else
