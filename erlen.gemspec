@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = 'erlen'
-  s.version     = '0.0.7'
+  s.version     = '0.0.8'
   s.date        = '2016-10-21'
   s.summary     = "VALIDATE"
   s.description = "Validator and Serializer"
