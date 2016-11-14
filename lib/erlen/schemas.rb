@@ -133,7 +133,7 @@ module Erlen
         end
 
         def initialize(elements=[])
-          @elements = elements.to_a.map do |elem|
+          @elements = elements.map do |elem|
             if self.class.element_schema <= BaseSchema
               self.class.element_schema.new(elem)
             else
