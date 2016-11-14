@@ -111,6 +111,11 @@ module Erlen
           # @return BaseSchema the concrete schema object.
           def import(obj_elements)
             payload = self.new
+
+            if obj_elements.class <= BaseSchema
+              obj_elements = obj_elements.elements
+            end
+
             obj_elements.each do |obj|
               payload.elements << element_schema.import(obj)
             end
