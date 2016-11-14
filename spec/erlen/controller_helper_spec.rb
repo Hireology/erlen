@@ -26,7 +26,8 @@ describe Erlen::ControllerHelper do
   class JobsController < FauxController
     include Erlen::ControllerHelper
 
-    request_schema :create, JobRequestSchema
+    action_schema :create, request: JobRequestSchema, response: JobResponseSchema
+    action_schema :show, response: JobResponseSchema
 
     def create
       job = JobResponseSchema.import(request_payload)
@@ -60,6 +61,21 @@ describe Erlen::ControllerHelper do
       expect(controller.request_payload.valid?).to be_truthy
       expect(controller.request_payload.class).to be(JobRequestSchema)
       controller.create
+      controller.validate_response_schema_for_create
+      expect(controller.response_payload.valid?).to be_truthy
+      expect(controller.response_schema).to be(JobResponseSchema)
+    end
+    it "validates show schema (without a proper payload)" do
+      request = OpenStruct.new
+      request.body = ""
+      controller.request = request
+      controller.validate_request_schema_for_show
+      expect(controller.request_payload).to be_nil
+      controller.show
+      expect(controller.response_payload).to be_nil
+      controller.validate_response_schema_for_create
+      expect(controller.response_payload.valid?).to be_truthy
+      expect(controller.response_schema).to be(JobResponseSchema)
     end
     it "invalidates malformed request body" do
       request = OpenStruct.new
@@ -68,6 +84,14 @@ describe Erlen::ControllerHelper do
       expect do
         controller.validate_request_schema_for_create
       end.to raise_error(Erlen::InvalidRequestError)
+    end
+    it "invalidates malformed response body" do
+      response = OpenStruct.new
+      response.body = "notavalidjson"
+      controller.response = response
+      expect do
+        controller.validate_response_schema_for_create
+      end.to raise_error(Erlen::InvalidResponseError)
     end
     it "invalidates inappropriate request payload" do
       request = OpenStruct.new
@@ -81,6 +105,19 @@ describe Erlen::ControllerHelper do
       controller.request = request
       expect do
         controller.validate_request_schema_for_create
+      end.to raise_error(Erlen::ValidationError)
+    end
+    it "invalidates inappropriate response payload" do
+      response = OpenStruct.new
+      response.body = '{"wrongattribute": "bar"}'
+      controller.response = response
+      expect do
+        controller.validate_response_schema_for_create
+      end.to raise_error(Erlen::NoAttributeError)
+      response.body = '{}'
+      controller.response = response
+      expect do
+        controller.validate_response_schema_for_create
       end.to raise_error(Erlen::ValidationError)
     end
   end
