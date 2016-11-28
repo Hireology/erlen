@@ -142,11 +142,10 @@ module Erlen; module Schema
       if mname.to_s.end_with?('=')
         __assign_attribute(mname[0..-2].to_sym, value)
       else
-        if @attributes.include?(mname.to_sym)
-          @attributes[mname.to_sym]
-        else
-          raise NoAttributeError.new(mname)
-        end
+        attr_val = __find_attribute_value_by_name(mname.to_sym)
+        return attr_val if attr_val
+
+        raise NoAttributeError.new(mname)
       end
     end
 
@@ -211,6 +210,14 @@ module Erlen; module Schema
       else
         raise NoAttributeError.new(name) unless @attributes.include?(name)
       end
+    end
+
+    def __find_attribute_value_by_name(name)
+      @attributes[name] ||
+        self.class.schema_attributes.each_pair do |k, attr|
+          next unless attr.options[:alias] == name
+          return @attributes[k]
+        end
     end
 
   end

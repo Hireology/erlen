@@ -38,6 +38,7 @@ describe Erlen::Schema::Base do
       missing.foo = 'bar'
       expect(missing.valid?).to be_truthy
       expect(missing.foo).to eq('bar')
+      expect(missing.bar).to eq('bar')
     end
   end
 
@@ -52,7 +53,7 @@ describe Erlen::Schema::Base do
 end
 
 class TestBaseSchema < Erlen::Schema::Base
-  attribute :foo, String
+  attribute :foo, String, { alias: :bar }
   attribute :custom, Integer
 
   validate("Error Message") { |s| s.foo == 'bar' || s.foo == 1 }
