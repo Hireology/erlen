@@ -74,10 +74,11 @@ module Erlen; module Schema
             end
           end
 
-          attr_val = attr.type.import(attr_val || default_val) if attr.type <= Base
+          attr_val = attr_val.nil? ? default_val : attr_val
+          attr_val = attr.type.import(attr_val) if attr.type <= Base
 
           # private method so use send
-          payload.send(:__assign_attribute, k, (attr_val || default_val))
+          payload.send(:__assign_attribute, k, attr_val)
         end
 
         payload

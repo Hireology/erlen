@@ -37,6 +37,7 @@ module Erlen; module Rails
             rescue JSON::ParserError
               raise InvalidRequestError.new("Could not parse request body")
             end
+
             raise ValidationError.from_errors(@request_payload.errors) unless @request_payload.valid?
           end
         end

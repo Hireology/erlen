@@ -14,7 +14,7 @@ TBD
 
 ## Definitions
 
-### Schema 
+### Schema
 
 A formal contract between two parties, defined with a set of of attributes
 and validations. It is represented as a class which inherits from
@@ -122,7 +122,7 @@ accessed via `element` method.
     ints = ArrayOf.new(Integer)
     ints.elements << 1
     ints.elements << 2
-    ints.elements 
+    ints.elements
     # will return [1, 2]
 
 ### ControllerHelper
@@ -177,8 +177,13 @@ method so you can easily render a payload.
 This is not required, however. The advantage of using the above method is
 (1) you don't need to serialize the payload into JSON yourself, and (2)
 validation is done at the time of `render` call, which is helpful for
-debugging purpose. 
+debugging purpose.
 
 Note that, if payload is rendered using the above form, the after action
 callback will skip the validation (as long as there wasn't any other render
 call.)
+
+## License
+
+Erlen is released under the MIT License:
+www.opensource.org/licenses/MIT

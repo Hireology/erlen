@@ -49,10 +49,12 @@ module Erlen; module Schema
 
             if obj_elements.class <= Base
               obj_elements = obj_elements.elements
+            elsif obj_elements.class <= Undefined
+              obj_elements = []
             end
 
             obj_elements.each do |obj|
-              payload.elements << self.element_type.import(obj)
+              payload << obj
             end
 
             payload
@@ -73,14 +75,15 @@ module Erlen; module Schema
         #
         # @return [Hash] the payload data
         def to_hash
-          @elements.map {|e| e.to_hash }
+          @elements.map do |e|
+            self.class.element_type <= BaseSchema ? e.to_hash : e
+          end
         end
 
         def initialize(elements=[])
           @elements = elements.map do |elem|
             normalize_element(elem)
           end
-          @elements = elements.to_a
           __init_inst_vars
         end
 
