@@ -60,7 +60,7 @@ class TestBaseSchema < Erlen::Schema::Base
 end
 
 class TestObj
-  def foo
+  def bar
     'bar'
   end
 end
