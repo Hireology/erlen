@@ -59,22 +59,18 @@ module Erlen; module Schema
         schema_attributes.each_pair do |k, attr|
           obj_attribute_name = (attr.options[:alias] || attr.name).to_sym
 
-          default_val = attr.options[:default]
           if obj.class <= Base # cannot use is_a?
             begin
               attr_val = obj.send(k)
             rescue NoAttributeError => e
-              attr_val = default_val || Undefined.new
+              attr_val = attr.options.include?(:default) ? attr.options[:default] : Undefined.new
             end
+          elsif obj.respond_to?(obj_attribute_name)
+            attr_val = obj.send(obj_attribute_name)
           else
-            if obj.respond_to?(obj_attribute_name)
-              attr_val = obj.send(obj_attribute_name)
-            else
-              attr_val = default_val || Undefined.new
-            end
+            attr_val = attr.options.include?(:default) ? attr.options[:default] : Undefined.new
           end
 
-          attr_val = attr_val.nil? ? default_val : attr_val
           attr_val = attr.type.import(attr_val) if attr.type <= Base
 
           # private method so use send
@@ -105,7 +101,7 @@ module Erlen; module Schema
       # TODO: this initialization can be written to be more efficient.
       # Initialize all values to undefined
       self.class.schema_attributes.each_pair do |k, v|
-        @attributes[k] = Undefined.new
+        @attributes[k] = v.options.include?(:default) ? v.options[:default] : Undefined.new
       end
 
       if obj.is_a? Hash
@@ -198,25 +194,30 @@ module Erlen; module Schema
 
     def __assign_attribute(name, value)
       name = name.to_sym
-      if @attributes.include?(name)
-        #If the attribute type is a schema and value is not yet a schema, then store
-        #value as a schema for easy valid check and to hash
-        attr = self.class.schema_attributes[name]
-        value = attr.type.new(value) if attr.type <= Base && !(value.class <= Base)
+      raise(NoAttributeError, name) unless @attributes.include?(name)
 
-        @attributes[name] = value
-      else
-        raise NoAttributeError.new(name) unless @attributes.include?(name)
-      end
+      # If the attribute type is a schema and value is not yet a schema, then
+      # store value as a schema for easy valid check and to hash
+      attr = self.class.schema_attributes[name]
+      value = attr.type.new(value) if attr.type <= Base && !(value.class <= Base)
+
+      @attributes[name] = value
     end
 
     def __find_attribute_value_by_name(name)
-      name = name.to_sym
-      return @attributes[name] if @attributes.include?(name)
-      self.class.schema_attributes.each_pair do |k, attr|
-        return @attributes[k] if attr.options[:alias] == name
+      # If the attribute is include retrieve that, otherwise check for aliases
+      if @attributes.include?(name)
+        val = @attributes[name]
+
+        # We don't want to expose Undefined to the outside world, nil it the logical equal
+        return val.is_a?(Undefined) ? nil : val
+      else
+        self.class.schema_attributes.each_pair do |k, attr|
+          return @attributes[k] if attr.options[:alias] == name
+        end
       end
-      raise NoAttributeError.new(name)
+
+      raise NoAttributeError, name
     end
 
   end

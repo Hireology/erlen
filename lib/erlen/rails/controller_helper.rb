@@ -113,6 +113,8 @@ module Erlen; module Rails
 
     def render_schema(payload, opts={}, extra_opts={}, &blk)
       raise ValidationError.from_errors(payload.errors) unless payload.valid?
+      raise ValidationError.new('Response Scheama does not match') if @response_schema && !payload.is_a?(@response_schema)
+
       opts.update({json: Erlen::Serializer::JSON.to_json(payload)})
       render(opts, extra_opts, &blk) # NOTE: indirect recursion!
       @validated = true # set this after recursive render()

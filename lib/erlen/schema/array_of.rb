@@ -47,9 +47,9 @@ module Erlen; module Schema
           def import(obj_elements)
             payload = self.new
 
-            if obj_elements.class <= Base
+            if obj_elements.class <= Base && obj_elements.respond_to?(:element_type)
               obj_elements = obj_elements.elements
-            elsif obj_elements.class <= Undefined
+            elsif obj_elements.nil? || obj_elements.is_a?(Undefined)
               obj_elements = []
             end
 
