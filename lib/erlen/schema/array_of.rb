@@ -116,6 +116,10 @@ module Erlen; module Schema
         def normalize_element(element)
           if self.class.element_type <= Base && element.is_a?(Hash)
             self.class.element_type.new(element)
+
+          elsif self.class.element_type <= Base
+            self.class.element_type.import(element)
+
           else
             element
           end
