@@ -4,7 +4,6 @@ describe Erlen::Serializer::JSONSchema do
   subject { described_class }
 
   describe "#to_json_schema" do
-
     it "builds top level properties" do
       class TopLevelTestSchema < Erlen::Schema::Base; end
 
@@ -46,8 +45,20 @@ describe Erlen::Serializer::JSONSchema do
       end
     end
 
-    context "when converting basic types" do
+    context 'when converting ArrayOf' do
+      it "returns correct type info" do
+        class ArrayOfTestSchema < Erlen::Schema::Base
+          attribute :foo, Erlen::Schema::ArrayOf.new(String)
+        end
 
+        converted = subject.to_json_schema(ArrayOfTestSchema)
+        expect(converted[:properties]).to eq({
+          foo: { "type": "list", items: { "type": "string" } }
+        })
+      end
+    end
+
+    context "when converting basic types" do
       it "converts String attribute to 'string'" do
         class StringTestSchema < Erlen::Schema::Base
           attribute :foo, String

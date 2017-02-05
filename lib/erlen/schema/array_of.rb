@@ -127,6 +127,14 @@ module Erlen; module Schema
             "ArrayOf#{element_type.name}"
           end
 
+          def container_class
+            Erlen::Schema::ArrayOf
+          end
+
+          def element_type
+            String
+          end
+
           # Imports from an array of objects (or payloads). This is different from
           # instantiating the class with an array hashes or schema objects because it
           # looks for schema attributes from the specified objects gracefully.

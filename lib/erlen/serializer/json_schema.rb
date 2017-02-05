@@ -16,6 +16,41 @@ module Erlen; module Serializer
       base_schema
     end
 
+    def self.convert_attribute(attribute)
+      if attribute < Erlen::Schema::Base
+        convert_container(attribute)
+      else
+        convert_type(attribute)
+      end
+    end
+
+    def self.convert_container(container_attribute)
+      if container_attribute.container_class <= ::Erlen::Schema::ArrayOf
+        {
+          type: 'list',
+          items: {
+            type: convert_attribute(container_attribute.element_type)
+          }
+        }
+      end
+    end
+
+    def self.convert_type(type_attribute)
+      if type_attribute == String
+        "string"
+      elsif type_attribute == Numeric
+        "numeric"
+      elsif type_attribute == Integer
+        "integer"
+      elsif type_attribute == Boolean
+        "boolean"
+      elsif type_attribute == DateTime
+        "date"
+      else
+        "null"
+      end
+    end
+
     def self.initialize_schema(schema_class)
       {
         type: "object",
@@ -26,27 +61,5 @@ module Erlen; module Serializer
       }
     end
 
-    def self.convert_attribute(attribute)
-      if attribute == String
-        "string"
-      elsif attribute == Numeric
-        "numeric"
-      elsif attribute == Integer
-        "integer"
-      elsif attribute == Boolean
-        "boolean"
-      elsif attribute == DateTime
-        "date"
-      elsif attribute.type == ::Erlen::Schema::ArrayOf
-        {
-          "type": "list",
-          items: {
-            "type": to_json_schema(attribute.element_type)
-          }
-        }
-      else
-        "null"
-      end
-    end
   end
 end; end
