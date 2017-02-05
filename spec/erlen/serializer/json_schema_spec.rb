@@ -45,15 +45,62 @@ describe Erlen::Serializer::JSONSchema do
       end
     end
 
-    context 'when converting ArrayOf' do
-      it "returns correct type info" do
-        class ArrayOfTestSchema < Erlen::Schema::Base
+    context 'when converting non-primitive types' do
+      it "converts Base schemas to json_schema object structures" do
+        class ChildSchema < Erlen::Schema::Base
+          attribute :foo, Integer
+        end
+
+        class ParentSchema < Erlen::Schema::Base
+          attribute :child, ChildSchema
+        end
+
+        converted = subject.to_json_schema(ParentSchema)
+        expect(converted[:properties]).to eq({
+          child: {
+            type: "object",
+            title: standard_obj_name(ChildSchema),
+            description: standard_obj_description(ChildSchema),
+            properties: { foo: "integer" },
+            required: [],
+          }
+        })
+      end
+
+      it "converts ArrayOf to array json_schema structure - primitive" do
+        class ArrayOfTestPrimitiveSchema < Erlen::Schema::Base
           attribute :foo, Erlen::Schema::ArrayOf.new(String)
         end
 
-        converted = subject.to_json_schema(ArrayOfTestSchema)
+        converted = subject.to_json_schema(ArrayOfTestPrimitiveSchema)
         expect(converted[:properties]).to eq({
           foo: { "type": "list", items: { "type": "string" } }
+        })
+      end
+
+      it "converts ArrayOf to array json_schema structure - schema" do
+        class ArrayChildSchema < Erlen::Schema::Base
+          attribute :foo, Integer
+        end
+
+        class ArrayOfTestContainerSchema < Erlen::Schema::Base
+          attribute :list, Erlen::Schema::ArrayOf.new(ArrayChildSchema)
+        end
+
+        converted = subject.to_json_schema(ArrayOfTestContainerSchema)
+        expect(converted[:properties]).to eq({
+          list: {
+            type: "list",
+            items: {
+              type: {
+                type: "object",
+                title: standard_obj_name(ArrayChildSchema),
+                description: standard_obj_description(ArrayChildSchema),
+                properties: { foo: "integer" },
+                required: [],
+              }
+            }
+          }
         })
       end
     end
@@ -122,5 +169,13 @@ describe Erlen::Serializer::JSONSchema do
         expect(converted[:properties]).to eq({ time: 'time' })
       end
     end
+  end
+
+  def standard_obj_name(erlen_class)
+    erlen_class.name
+  end
+
+  def standard_obj_description(erlen_class)
+    "expected structure for #{erlen_class.name}"
   end
 end

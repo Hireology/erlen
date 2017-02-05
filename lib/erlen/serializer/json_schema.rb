@@ -3,19 +3,21 @@ module Erlen; module Serializer
     include Erlen::Schema
 
     def self.to_json_schema(erlen_schema_class)
-      base_json_schema = build_json_schema_object(erlen_schema_class)
-      add_top_level_attributes(base_json_schema, erlen_schema_class)
+      build_json_schema_object(erlen_schema_class)
     end
 
-    def self.add_top_level_attributes(json_schema, erlen_schema_class)
-      json_schema.merge({
+    def self.build_base_object(erlen_schema_class)
+      {
+        type: "object",
         title: erlen_schema_class.name,
         description: "expected structure for #{erlen_schema_class.name}",
-      })
+        properties: {},
+        required: [],
+      }
     end
 
     def self.build_json_schema_object(erlen_schema_class)
-      json_schema_object = { type: "object", properties: {}, required: [] }
+      json_schema_object = build_base_object(erlen_schema_class)
       erlen_schema_class.schema_attributes.each_pair do |_, attribute|
         attribute_name = attribute.name.to_sym
         json_schema_object[:properties][attribute_name] = convert_attribute(attribute.type)
