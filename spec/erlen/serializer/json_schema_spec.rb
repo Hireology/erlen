@@ -169,6 +169,48 @@ describe Erlen::Serializer::JSONSchema do
         expect(converted[:properties]).to eq({ time: 'time' })
       end
     end
+
+    context "when converting multi-attribute schemas" do
+
+      it "handles combination of array and object attributes" do
+        class MultiAttrChild1 < Erlen::Schema::Base
+          attribute :foo, Integer
+        end
+
+        class MultiAttrChild2 < Erlen::Schema::Base
+          attribute :bar, String, required: true
+        end
+
+        class MultiAttr1 < Erlen::Schema::Base
+          attribute :primitive, Integer, required: true
+          attribute :list, Erlen::Schema::ArrayOf.new(MultiAttrChild1), required: true
+          attribute :obj, MultiAttrChild2
+        end
+
+        converted = subject.to_json_schema(MultiAttr1)
+        expect(converted[:required]).to eq([:primitive, :list])
+        expect(converted[:properties][:primitive]).to eq("integer")
+        expect(converted[:properties][:list]).to eq({
+          type: "list",
+          items: {
+            type: {
+              type: "object",
+              title: standard_obj_name(MultiAttrChild1),
+              description: standard_obj_description(MultiAttrChild1),
+              properties: { foo: "integer" },
+              required: [],
+            }
+          }
+        })
+        expect(converted[:properties][:obj]).to eq({
+          type: "object",
+          title: standard_obj_name(MultiAttrChild2),
+          description: standard_obj_description(MultiAttrChild2),
+          properties: { bar: "string" },
+          required: [:bar],
+        })
+      end
+    end
   end
 
   def standard_obj_name(erlen_class)
