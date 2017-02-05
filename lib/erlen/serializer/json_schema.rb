@@ -1,65 +1,71 @@
 module Erlen; module Serializer
   class JSONSchema
+    include Erlen::Schema
 
-    def self.to_json_schema(schema_class)
-      base_schema = initialize_schema(schema_class)
-      convert_schema(base_schema, schema_class)
+    def self.to_json_schema(erlen_schema_class)
+      base_json_schema = build_json_schema_object(erlen_schema_class)
+      add_top_level_attributes(base_json_schema, erlen_schema_class)
     end
 
-    def self.convert_schema(base_schema, schema_class)
-      schema_class.schema_attributes.each_pair do |_, attribute|
+    def self.add_top_level_attributes(json_schema, erlen_schema_class)
+      json_schema.merge({
+        title: erlen_schema_class.name,
+        description: "expected structure for #{erlen_schema_class.name}",
+      })
+    end
+
+    def self.build_json_schema_object(erlen_schema_class)
+      json_schema_object = { type: "object", properties: {}, required: [] }
+      erlen_schema_class.schema_attributes.each_pair do |_, attribute|
         attribute_name = attribute.name.to_sym
-        base_schema[:properties][attribute_name] = convert_attribute(attribute.type)
-        base_schema[:required] << attribute_name if attribute.options[:required]
+        json_schema_object[:properties][attribute_name] = convert_attribute(attribute.type)
+        json_schema_object[:required] << attribute_name if attribute.options[:required]
       end
 
-      base_schema
+     json_schema_object
     end
 
-    def self.convert_attribute(attribute)
-      if attribute < Erlen::Schema::Base
-        convert_container(attribute)
-      else
-        convert_type(attribute)
-      end
-    end
-
-    def self.convert_container(container_attribute)
-      if container_attribute.container_class <= ::Erlen::Schema::ArrayOf
-        {
-          type: 'list',
-          items: {
-            type: convert_attribute(container_attribute.element_type)
-          }
+    def self.build_json_schema_array(erlen_container_class)
+      { type: 'list',
+        items: {
+          type: convert_attribute(erlen_container_class.element_type),
         }
-      end
-    end
-
-    def self.convert_type(type_attribute)
-      if type_attribute == String
-        "string"
-      elsif type_attribute == Numeric
-        "numeric"
-      elsif type_attribute == Integer
-        "integer"
-      elsif type_attribute == Boolean
-        "boolean"
-      elsif type_attribute == DateTime
-        "date"
-      else
-        "null"
-      end
-    end
-
-    def self.initialize_schema(schema_class)
-      {
-        type: "object",
-        title: schema_class.name,
-        description: "expected structure for #{schema_class.name}",
-        properties: {},
-        required: []
       }
     end
 
+    def self.convert_attribute(attribute)
+      if attribute <= Schema::Base
+        convert_container_type(attribute)
+      else
+        convert_primitive_type(attribute)
+      end
+    end
+
+    def self.convert_container_type(container_attribute)
+      if container_attribute.container_class <= ArrayOf
+        build_json_schema_array(container_attribute)
+      else
+        build_json_schema_object(container_attribute)
+      end
+    end
+
+    def self.convert_primitive_type(primitive_type)
+      case
+      when primitive_type <= String
+        "string"
+      when primitive_type <= Integer
+        "integer"
+      when primitive_type <= Numeric
+        "numeric"
+      when primitive_type <= Boolean
+        "boolean"
+      when primitive_type <= Date
+        "date"
+      when primitive_type <= Time
+        "time"
+      else
+        nil
+      end
+    end
   end
 end; end

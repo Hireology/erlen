@@ -1,4 +1,4 @@
-# require 'spec_helper'
+require 'spec_helper'
 
 describe Erlen::Serializer::JSONSchema do
   subject { described_class }
@@ -95,6 +95,15 @@ describe Erlen::Serializer::JSONSchema do
         expect(converted[:properties]).to eq({ baz: "boolean" })
       end
 
+      it "converts Date attribute to 'date'" do
+        class DateTestSchema < Erlen::Schema::Base
+          attribute :date, Date
+        end
+
+        converted = subject.to_json_schema(DateTestSchema)
+        expect(converted[:properties]).to eq({ date: "date" })
+      end
+
       it "converts DateTime attribute to 'date'" do
         class DateTimeTestSchema < Erlen::Schema::Base
           attribute :date, DateTime
@@ -102,6 +111,15 @@ describe Erlen::Serializer::JSONSchema do
 
         converted = subject.to_json_schema(DateTimeTestSchema)
         expect(converted[:properties]).to eq({ date: "date" })
+      end
+
+      it "converts Time attribute to 'time'" do
+        class TimeTestSchema < Erlen::Schema::Base
+          attribute :time, Time
+        end
+
+        converted = subject.to_json_schema(TimeTestSchema)
+        expect(converted[:properties]).to eq({ time: 'time' })
       end
     end
   end

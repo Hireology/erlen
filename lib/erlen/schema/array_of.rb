@@ -128,11 +128,7 @@ module Erlen; module Schema
           end
 
           def container_class
-            Erlen::Schema::ArrayOf
-          end
-
-          def element_type
-            String
+            ArrayOf
           end
 
           # Imports from an array of objects (or payloads). This is different from
