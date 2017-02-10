@@ -71,7 +71,11 @@ module Erlen; module Schema
             attr_val = attr.options.include?(:default) ? attr.options[:default] : Undefined.new
           end
 
-          attr_val = attr.type.import(attr_val) if attr.type <= Base
+          if attr.type <= Base && attr_val.is_a?(Hash)
+            attr_val = attr.type.new(attr_val)
+          elsif attr.type <= Base
+            attr_val = attr.type.import(attr_val)
+          end
 
           # private method so use send
           payload.send(:__assign_attribute, k, attr_val)
