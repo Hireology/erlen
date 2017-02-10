@@ -59,7 +59,9 @@ module Erlen; module Schema
         schema_attributes.each_pair do |k, attr|
           obj_attribute_name = (attr.options[:alias] || attr.name).to_sym
 
-          if obj.class <= Base # cannot use is_a?
+          if obj.is_a? Hash
+            attr_val = obj[k]
+          elsif obj.class <= Base # cannot use is_a?
             begin
               attr_val = obj.send(k)
             rescue NoAttributeError => e
@@ -71,11 +73,7 @@ module Erlen; module Schema
             attr_val = attr.options.include?(:default) ? attr.options[:default] : Undefined.new
           end
 
-          if attr.type <= Base && attr_val.is_a?(Hash)
-            attr_val = attr.type.new(attr_val)
-          elsif attr.type <= Base
-            attr_val = attr.type.import(attr_val)
-          end
+          attr_val = attr.type.import(attr_val) if attr.type <= Base
 
           # private method so use send
           payload.send(:__assign_attribute, k, attr_val)
