@@ -110,6 +110,12 @@ describe Erlen::Schema::ArrayOf do
     attribute :sweet, Boolean
   end
 
+  class AppleObj
+    def poisonous
+      true
+    end
+  end
+
   BasketOfApples = Erlen::Schema::ArrayOf.new(Apple)
   Numbers = Erlen::Schema.array_of(Numeric)
 
@@ -131,7 +137,7 @@ describe Erlen::Schema::ArrayOf do
       expect(new_basket).to eq(new_basket)
 
       basket = BasketOfApples.import([
-        {poisonous: true}, {poisonous: false}
+        AppleObj.new, {poisonous: false}
       ])
       expect(basket.valid?).to be_truthy
       expect(basket.count).to be(2)
