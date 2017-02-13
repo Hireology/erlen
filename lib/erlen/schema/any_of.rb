@@ -25,7 +25,7 @@ module Erlen; module Schema
           def import(obj)
             schema = allowed_schemas.find do |s| s.import(obj).valid? end
             payload = schema.import(obj) if schema
-            hash = payload.to_hash if payload
+            hash = payload.to_data if payload
             new(hash)
           end
 
@@ -58,7 +58,12 @@ module Erlen; module Schema
         end
 
         def to_hash
-          @payload.to_hash
+          warn "[DEPRECATION] `to_hash` is deprecated.  Please use `to_data` instead."
+          to_data
+        end
+
+        def to_data
+          @payload.to_data
         end
 
         protected

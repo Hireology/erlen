@@ -14,10 +14,19 @@ describe Erlen::Serializer::Base do
     end
   end
 
-  describe "#payload_to_hash" do
+  describe "#payload_to_data" do
+    # Depricated
     it "returns hash of payload data" do
       payload =  TestBaseSerializerSchema.new({ foo: 'bar' })
       data = subject.payload_to_hash(payload)
+
+      expect(data).to include('foo')
+      expect(data['foo']).to eq('bar')
+    end
+
+    it "returns hash of payload data" do
+      payload =  TestBaseSerializerSchema.new({ foo: 'bar' })
+      data = subject.payload_to_data(payload)
 
       expect(data).to include('foo')
       expect(data['foo']).to eq('bar')

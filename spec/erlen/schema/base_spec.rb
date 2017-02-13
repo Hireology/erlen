@@ -66,6 +66,23 @@ describe Erlen::Schema::Base do
     end
   end
 
+  describe '#to_data' do
+    it 'converts to hash' do
+      payload = TestBaseSchema.import(TestObj.new)
+      data = payload.to_hash
+
+      expect(data['foo']).to eq('bar')
+      expect(data['custom']).to eq(nil)
+    end
+
+    it 'converts to hash' do
+      payload = TestBaseSchema.import(TestObj.new)
+      data = payload.to_data
+
+      expect(data['foo']).to eq('bar')
+      expect(data['custom']).to eq(nil)
+    end
+  end
 end
 
 class TestBaseSchema < Erlen::Schema::Base

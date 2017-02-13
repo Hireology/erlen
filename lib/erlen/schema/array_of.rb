@@ -164,8 +164,16 @@ module Erlen; module Schema
         #
         # @return [Hash] the payload data
         def to_hash
+          warn "[DEPRECATION] `to_hash` is deprecated.  Please use `to_data` instead."
+          to_data
+        end
+
+        # Composes an array where the values are the data equivelant of each element.
+        #
+        # @return [Array] the payload data
+        def to_data
           @elements.map do |e|
-            self.class.element_type <= Base ? e.to_hash : e
+            self.class.element_type <= Base ? e.to_data : e
           end
         end
 

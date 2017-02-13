@@ -7,9 +7,13 @@ module Erlen; module Serializer
     end
 
     def self.payload_to_hash(payload)
+      payload_to_data(payload)
+    end
+
+    def self.payload_to_data(payload)
       return nil unless payload.valid?
 
-      payload.to_hash
+      payload.to_data
     end
 
     private

@@ -94,7 +94,9 @@ describe Erlen::Schema::AnyOf do
       expect do
         dog_or_cat.meow = false
       end.to raise_error(Erlen::NoAttributeError)
+      # Depricated
       expect(dog_or_cat.to_hash).to eq({"woof" => false})
+      expect(dog_or_cat.to_data).to eq({"woof" => false})
     end
   end
 end
@@ -150,6 +152,19 @@ describe Erlen::Schema::ArrayOf do
       expect(numbers.valid?).to be_truthy
       numbers << Object.new
       expect(numbers.valid?).to be_falsey
+    end
+
+    it 'returns an array of hashes' do
+      apple = Apple.new(poisonous: true)
+      apple2 = Apple.new(poisonous: false)
+      basket = BasketOfApples.new([apple, apple2])
+      data = basket.to_hash
+      expect(data[0]).to eq('poisonous'=>true)
+      expect(data[1]).to eq('poisonous'=>false)
+
+      data = basket.to_data
+      expect(data[0]).to eq('poisonous'=>true)
+      expect(data[1]).to eq('poisonous'=>false)
     end
   end
 

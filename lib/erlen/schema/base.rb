@@ -150,11 +150,20 @@ module Erlen; module Schema
     #
     # @return [Hash] the payload data
     def to_hash
+      warn "[DEPRECATION] `to_hash` is deprecated.  Please use `to_data` instead."
+      to_data
+    end
+
+    # Composes a hash where the keys are attribute names. Any values that
+    # are payloads will be flattened to hashes as well.
+    #
+    # @return [Hash] the payload data
+    def to_data
       attrs = self.class.schema_attributes
 
       hash = attrs.map do |k, attr|
         val = send(k)
-        val = val.to_hash if val.class <= Base
+        val = val.to_data if val.class <= Base
 
         [attr.name, val]
       end
