@@ -152,14 +152,6 @@ module Erlen; module Schema
 
         klass.element_type = element_type
 
-        validate("Elements must be #{element_type.name}") do |payload|
-          element_type = payload.class.element_type
-          # calling a protected method, use `send`.
-          payload.send(:elements).find do |e|
-            !e.is_a?(element_type) || (element_type <= Base && !e.valid?)
-          end.nil?
-        end
-
         # Composes an array where the values are the data equivelant of each element.
         #
         # @return [Hash] the payload data
@@ -274,6 +266,16 @@ module Erlen; module Schema
           else
             element
           end
+        end
+
+        def __validate_payload
+          @errors.clear
+          @elements.each_with_index do |e, i|
+            @errors << "Element[#{i}] must be #{self.class.element_type.name}" unless e.is_a?(self.class.element_type)
+            @errors << e.errors if self.class.element_type <= Base && !e.valid?
+          end
+
+          @errors.size.zero?
         end
       end
     end
