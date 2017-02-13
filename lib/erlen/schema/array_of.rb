@@ -260,7 +260,7 @@ module Erlen; module Schema
           if self.class.element_type <= Base && element.is_a?(Hash)
             self.class.element_type.new(element)
 
-          elsif self.class.element_type <= Base
+          elsif self.class.element_type <= Base && !(element.class <= Base)
             self.class.element_type.import(element)
 
           else
