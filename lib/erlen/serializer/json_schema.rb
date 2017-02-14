@@ -2,56 +2,70 @@ module Erlen; module Serializer
   class JSONSchema
     include Erlen::Schema
 
-    def self.to_json_schema(erlen_schema)
-      build_json_schema_object(erlen_schema)
+    def self.to_json_schema(schema)
+      serialize_object(schema)
     end
 
-    def self.build_json_schema_object(erlen_schema)
-      json_schema_object = build_base_object(erlen_schema)
-      erlen_schema.schema_attributes.each_pair do |_, attribute|
+    def self.serialize_object(schema)
+      json_schema_object = build_base_object(schema)
+      schema.schema_attributes.each_pair do |_, attribute|
         attribute_name = attribute.name.to_sym
-        json_schema_object[:properties][attribute_name] = convert_attribute(attribute.type)
+        json_schema_object[:properties][attribute_name] = serialize_attribute_type(attribute.type)
         json_schema_object[:required] << attribute_name if attribute.options[:required]
       end
 
      json_schema_object
     end
 
-    def self.build_base_object(erlen_schema)
+    def self.serialize_list(list_collection)
+      base_list = build_base_list
+      base_list[:items][:type] = serialize_attribute_type(list_collection.element_type)
+      base_list
+    end
+
+    def self.serialize_attribute_type(attribute)
+      if collection?(attribute)
+        serialize_collection(attribute)
+      else
+        serialize_primitive(attribute)
+      end
+    end
+
+    def self.serialize_collection(collection_attribute)
+      if list_collection?(collection_attribute)
+        serialize_list(collection_attribute)
+      else
+        serialize_object(collection_attribute)
+      end
+    end
+
+    def self.collection?(attribute)
+      attribute <= Schema::Base
+    end
+
+    def self.list_collection?(attribute)
+      attribute&.container_class <= Schema::ArrayOf
+    end
+
+    def self.build_base_object(schema)
       {
         type: "object",
-        title: erlen_schema.name,
-        description: "expected structure for #{erlen_schema.name}",
+        title: schema.name,
+        description: "expected structure for #{schema.name}",
         properties: {},
         required: [],
       }
     end
 
-    def self.build_json_schema_array(erlen_container)
+    def self.build_base_list
       { type: 'list',
         items: {
-          type: convert_attribute(erlen_container.element_type),
+          type: nil,
         }
       }
     end
 
-    def self.convert_attribute(attribute)
-      if attribute <= Schema::Base
-        convert_collection(attribute)
-      else
-        convert_primitive(attribute)
-      end
-    end
-
-    def self.convert_collection(collection_attribute)
-      if collection_attribute.container_class <= ArrayOf
-        build_json_schema_array(collection_attribute)
-      else
-        build_json_schema_object(collection_attribute)
-      end
-    end
-
-    def self.convert_primitive(primitive_type)
+    def self.serialize_primitive(primitive_type)
       case
       when primitive_type <= String
         "string"
