@@ -269,13 +269,13 @@ module Erlen; module Schema
         end
 
         def __validate_payload
-          @errors.clear
+          super_result = super
           @elements.each_with_index do |e, i|
             @errors << "Element[#{i}] must be #{self.class.element_type.name}" unless e.is_a?(self.class.element_type)
             @errors << e.errors if self.class.element_type <= Base && !e.valid?
           end
 
-          @errors.size.zero?
+          @errors.size.zero? && super_result
         end
       end
     end
