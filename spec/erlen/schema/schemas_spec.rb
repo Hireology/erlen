@@ -229,5 +229,33 @@ describe Erlen::Schema::ArrayOf do
       expect(combined.shift(2)).to eq(Numbers.new([1, 2]))
     end
   end
+end
 
+describe Erlen::Schema::ResourceArrayOf do
+  subject { described_class }
+
+  class Apple < Erlen::Schema::Base
+    attribute :poisonous, Boolean
+  end
+
+  class AppleObj
+    def poisonous
+      true
+    end
+  end
+
+  BushelOfApples = Erlen::Schema::ResourceArrayOf.new(Apple)
+
+  it 'has correct data attributes' do
+    apple = Apple.new(poisonous: true)
+    apple2 = Apple.new(poisonous: false)
+    apples = [apple, apple2]
+    schema_data = { data: apples, page: 0, page_size: 1, count: 2 }
+
+    basket = BushelOfApples.new(schema_data)
+    expect(basket.data.send(:elements)).to eq(apples)
+    expect(basket.page).to eq(0)
+    expect(basket.page_size).to eq(1)
+    expect(basket.count).to eq(2)
+  end
 end
