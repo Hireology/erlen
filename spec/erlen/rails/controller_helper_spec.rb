@@ -51,10 +51,12 @@ describe Erlen::Rails::ControllerHelper do
     let(:controller) { JobsController.new }
     it "validates create schemas" do
       request = OpenStruct.new
-      request.request_parameters = JSON.dump({
+      body = OpenStruct.new
+      request.body = body
+      body.read = {
         name: "foo",
         organization_id: 123
-      })
+      }.to_json
       controller.request = request
       # manually trigger before action
       controller.validate_request_schema_for_create
@@ -79,7 +81,9 @@ describe Erlen::Rails::ControllerHelper do
     end
     it "invalidates malformed request body" do
       request = OpenStruct.new
-      request.request_parameters = "notavalidjson"
+      body = OpenStruct.new
+      request.body = body
+      body.read = "notavalidjson"
       controller.request = request
       expect do
         controller.validate_request_schema_for_create
@@ -95,13 +99,17 @@ describe Erlen::Rails::ControllerHelper do
     end
     it "invalidates inappropriate request payload" do
       request = OpenStruct.new
-      request.request_parameters = '{"wrongattribute": "foo"}'
+      body = OpenStruct.new
+      request.body = body
+      body.read = { wrongattribute: 'foo' }.to_json
       controller.request = request
       expect do
         controller.validate_request_schema_for_create
       end.to raise_error(Erlen::NoAttributeError)
       request = OpenStruct.new
-      request.request_parameters = '{}'
+      body = OpenStruct.new
+      request.body = body
+      body.read = {}.to_json
       controller.request = request
       expect do
         controller.validate_request_schema_for_create
