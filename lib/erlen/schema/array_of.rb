@@ -113,7 +113,7 @@ module Erlen; module Schema
     #                             either a schema or a primitive type.
     # @return [Base] a dynamically created class <= BaseClass
     def self.new(element_type)
-      Class.new(Base) do |klass|
+      Class.new(::Erlen::Schema::ArrayBase) do |klass|
         class << klass
 
           # Specifies the type of the element. For primitive type,
@@ -125,10 +125,6 @@ module Erlen; module Schema
           # For better debugging
           def name
             "ArrayOf#{element_type.name}"
-          end
-
-          def container_class
-            ArrayOf
           end
 
           # Imports from an array of objects (or payloads). This is different from

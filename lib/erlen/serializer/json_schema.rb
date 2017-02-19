@@ -18,9 +18,9 @@ module Erlen; module Serializer
     end
 
     def self.serialize_list(list_collection)
-      base_list = build_base_list
-      base_list[:items][:type] = serialize_attribute_type(list_collection.element_type)
-      base_list
+      json_schema_list = build_base_list
+      json_schema_list[:items][:type] = serialize_attribute_type(list_collection.element_type)
+      json_schema_list
     end
 
     def self.serialize_attribute_type(attribute)
@@ -44,7 +44,7 @@ module Erlen; module Serializer
     end
 
     def self.list_collection?(attribute)
-      attribute&.container_class <= Schema::ArrayOf
+      attribute <= Schema::ArrayBase
     end
 
     def self.build_base_object(schema)
