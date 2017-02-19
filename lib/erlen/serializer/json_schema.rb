@@ -25,33 +25,33 @@ module Erlen; module Serializer
         json_schema_object
       end
 
-      def serialize_list(list_collection)
+      def serialize_list(list_container)
         json_schema_list = build_base_list
-        json_schema_list[:items][:type] = serialize_attribute_type(list_collection.element_type)
+        json_schema_list[:items][:type] = serialize_attribute_type(list_container.element_type)
         json_schema_list
       end
 
       def serialize_attribute_type(attribute)
-        if collection?(attribute)
-          serialize_collection(attribute)
+        if container?(attribute)
+          serialize_container(attribute)
         else
           serialize_primitive(attribute)
         end
       end
 
-      def serialize_collection(collection_attribute)
-        if list_collection?(collection_attribute)
-          serialize_list(collection_attribute)
+      def serialize_container(container_attribute)
+        if list_container?(container_attribute)
+          serialize_list(container_attribute)
         else
-          serialize_object(collection_attribute)
+          serialize_object(container_attribute)
         end
       end
 
-      def collection?(attribute)
+      def container?(attribute)
         attribute <= Schema::Base
       end
 
-      def list_collection?(attribute)
+      def list_container?(attribute)
         attribute <= Schema::ArrayBase
       end
 

@@ -23,10 +23,6 @@ module Erlen; module Schema
       # List of validation procs to run at valid?
       attr_accessor :validator_procs
 
-      def container_class
-        self
-      end
-
       # Defines an attribute for the schema. Must specify the type. If
       # validation block is specified, the block will be executed at
       # validation.
