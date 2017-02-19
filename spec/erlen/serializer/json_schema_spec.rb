@@ -74,7 +74,7 @@ describe Erlen::Serializer::JSONSchema do
 
         converted = subject.to_json_schema(ArrayOfTestPrimitiveSchema)
         expect(converted[:properties]).to eq({
-          foo: { "type": "list", items: { "type": "string" } }
+          foo: { "type": "array", items: { "type": "string" } }
         })
       end
 
@@ -90,7 +90,7 @@ describe Erlen::Serializer::JSONSchema do
         converted = subject.to_json_schema(ArrayOfTestContainerSchema)
         expect(converted[:properties]).to eq({
           list: {
-            type: "list",
+            type: "array",
             items: {
               type: {
                 type: "object",
@@ -191,7 +191,7 @@ describe Erlen::Serializer::JSONSchema do
         expect(converted[:required]).to eq([:primitive, :list])
         expect(converted[:properties][:primitive]).to eq("integer")
         expect(converted[:properties][:list]).to eq({
-          type: "list",
+          type: "array",
           items: {
             type: {
               type: "object",

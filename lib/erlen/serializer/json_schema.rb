@@ -66,7 +66,7 @@ module Erlen; module Serializer
       end
 
       def build_base_list
-        { type: 'list',
+        { type: 'array',
           items: {
           type: nil,
         }
