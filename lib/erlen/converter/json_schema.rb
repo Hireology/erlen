@@ -1,5 +1,5 @@
-module Erlen; module Serializer
-  # This class translates an Erlen schema definition into valid JSON Schema format
+module Erlen; module Converter
+  # This class converts an Erlen schema definition into valid JSON Schema format
   # More information about the JSON schema format can be found here: http://json-schema.org/
   class JSONSchema
     include Erlen::Schema

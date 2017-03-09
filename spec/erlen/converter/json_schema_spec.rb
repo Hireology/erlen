@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe Erlen::Serializer::JSONSchema do
+describe Erlen::Converter::JSONSchema do
   subject { described_class }
 
   describe "#to_json_schema" do
