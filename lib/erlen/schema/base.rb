@@ -13,6 +13,7 @@ module Erlen; module Schema
   #       later by the user.
   class Base
 
+
     # List of error messages
     attr_accessor :errors
 
@@ -35,6 +36,10 @@ module Erlen; module Schema
       def attribute(name, type, opts={}, &validation)
         attr = Attribute.new(name.to_sym, type, opts, &validation)
         schema_attributes[name.to_sym] = attr
+      end
+
+      def to_json_schema
+        ::Erlen::Converter::JSONSchema.to_json_schema(self)
       end
 
       # Defines a custom validation block. Must specify message which is
@@ -142,6 +147,7 @@ module Erlen; module Schema
         __find_attribute_value_by_name(mname.to_sym)
       end
     end
+
 
     # Composes a hash where the keys are attribute names. Any values that
     # are payloads will be flattened to hashes as well.
