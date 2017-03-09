@@ -25,10 +25,10 @@ module Erlen; module Converter
         json_schema_object
       end
 
-      def serialize_list(list_container)
-        json_schema_list = build_base_list
-        json_schema_list[:items][:type] = serialize_attribute_type(list_container.element_type)
-        json_schema_list
+      def serialize_array(array_container)
+        json_schema_array = build_base_array
+        json_schema_array[:items][:type] = serialize_attribute_type(array_container.element_type)
+        json_schema_array
       end
 
       def serialize_attribute_type(attribute)
@@ -40,8 +40,8 @@ module Erlen; module Converter
       end
 
       def serialize_container(container_attribute)
-        if list_container?(container_attribute)
-          serialize_list(container_attribute)
+        if array_container?(container_attribute)
+          serialize_array(container_attribute)
         else
           serialize_object(container_attribute)
         end
@@ -51,7 +51,7 @@ module Erlen; module Converter
         attribute <= Schema::Base
       end
 
-      def list_container?(attribute)
+      def array_container?(attribute)
         attribute <= Schema::ArrayBase
       end
 
@@ -65,7 +65,7 @@ module Erlen; module Converter
         }
       end
 
-      def build_base_list
+      def build_base_array
         { type: 'array',
           items: {
           type: nil,

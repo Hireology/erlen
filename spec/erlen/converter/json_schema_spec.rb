@@ -84,12 +84,12 @@ describe Erlen::Converter::JSONSchema do
         end
 
         class ArrayOfTestContainerSchema < Erlen::Schema::Base
-          attribute :list, Erlen::Schema::ArrayOf.new(ArrayChildSchema)
+          attribute :array, Erlen::Schema::ArrayOf.new(ArrayChildSchema)
         end
 
         converted = subject.to_json_schema(ArrayOfTestContainerSchema)
         expect(converted[:properties]).to eq({
-          list: {
+          array: {
             type: "array",
             items: {
               type: {
@@ -183,14 +183,14 @@ describe Erlen::Converter::JSONSchema do
 
         class MultiAttr1 < Erlen::Schema::Base
           attribute :primitive, Integer, required: true
-          attribute :list, Erlen::Schema::ArrayOf.new(MultiAttrChild1), required: true
+          attribute :array, Erlen::Schema::ArrayOf.new(MultiAttrChild1), required: true
           attribute :obj, MultiAttrChild2
         end
 
         converted = subject.to_json_schema(MultiAttr1)
-        expect(converted[:required]).to eq([:primitive, :list])
+        expect(converted[:required]).to eq([:primitive, :array])
         expect(converted[:properties][:primitive]).to eq("integer")
-        expect(converted[:properties][:list]).to eq({
+        expect(converted[:properties][:array]).to eq({
           type: "array",
           items: {
             type: {
