@@ -17,24 +17,32 @@ module Erlen; module Rails
       # @param action [String] the name of the action
       # @param request [Schema::Base] the schema for request body
       # @param response [Schema::Base] the schema for response body
-      def action_schema(action, request: nil, response: nil, options: {})
-        __erlen__create_before_action(action, request, response, options)
-        __erlen__create_after_action(action, response, options)
-        if options.dig(:options, :on) && response
-          __erlen__create_options_response(action, response, options[:options])
-        end
+      def action_schema(action, request: nil, response: nil, options: false)
+        __erlen__create_before_action(action, request, response)
+        __erlen__create_after_action(action, response)
+        __erlen_create_options_response(action, response) if options && response
         nil
       end
 
-      def __erlen_create_options_response(action, response_schema, options)
-        return nil unless response_schema
-
-        options_action = options.dig[:action] || :options
-        define_method(:"erlen_create_options_schema_response") do
-          @options_data = { "#{action}": response_schema.to_json_schema }
-          render @options_data, status: 200 unless options[:pass_thru]
+      def options_schema(on=:false)
+        if(on == :true)
+          define_method(:render_options_schema_data) do
+            @options ||= {}
+            render json: @options, status: 200
+          end
+          send(:"before_action", :render_options_schema_data, only: :options)
         end
-        send(:"before_action", :erlen_create_options_schema_response, only: options_action)
+      end
+
+      def __erlen_create_options_response(action, response_schema)
+        @options ||= {}
+
+        define_method(:"add_options_schema_for_#{action}") do
+          new_option = Filters::CreateSchemaOptionsData.run(action, response_schema)
+          @options = @options.merge(new_option)
+        end
+
+        send(:"before_action", :"add_options_schema_for_#{action}", only: :options)
       end
 
       def __erlen__create_before_action(action, request_schema, response_schema)

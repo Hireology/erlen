@@ -121,4 +121,25 @@ describe Erlen::Rails::ControllerHelper do
       end.to raise_error(Erlen::ValidationError)
     end
   end
+
+  describe "options data payload" do
+    class YoloController < FauxController
+      include Erlen::Rails::ControllerHelper
+      attr_accessor :options
+      def self.before_action(callback, opts = {}); end
+
+      action_schema :create, response: JobResponseSchema, options: true
+      options_schema :true
+
+      def options
+      end
+    end
+
+    let(:controller) { YoloController.new }
+
+    it "builds options response" do
+      expect(YoloController).to receive(:before_action).once
+      controller.options
+    end
+  end
 end
