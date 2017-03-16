@@ -27,8 +27,7 @@ module Erlen; module Rails
       def options_schema(on=:false)
         if(on == :true)
           define_method(:render_options_schema_data) do
-            @option_schemas ||= {}
-            render json: @option_schemas, status: 200
+            render json: (@option_schemas || {}), status: 200
           end
 
           send(:"before_action", :render_options_schema_data, only: :options)
@@ -39,8 +38,7 @@ module Erlen; module Rails
 
         define_method(:"add_options_schema_for_#{action}") do
           new_option = Filters::CreateSchemaOptionsData.run(action, response_schema)
-          @option_schemas ||= {}
-          @option_schemas = @option_schemas.merge(new_option)
+          @option_schemas = (@option_schemas || {}).merge(new_option)
         end
 
         send(:"before_action", :"add_options_schema_for_#{action}", only: :options)

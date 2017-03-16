@@ -160,7 +160,7 @@ describe Erlen::Rails::ControllerHelper do
       end
     end
 
-    context "numerous actions" do
+    context "more complex actions" do
       class TestController4 < FauxController
         include Erlen::Rails::ControllerHelper
         attr_accessor :options
@@ -226,7 +226,7 @@ describe Erlen::Rails::ControllerHelper do
     context "when determine if options data should be created for any action" do
       class TestController3 < FauxController
         include Erlen::Rails::ControllerHelper
-        attr_accessor :options
+        attr_accessor :option_schemas
         def self.before_action(callback, opts = {}); end
 
         action_schema :create, response: JobResponseSchema, options: true
@@ -238,12 +238,16 @@ describe Erlen::Rails::ControllerHelper do
       end
       let(:controller) { TestController3.new }
 
-      it "only builds options response for an action if action_schema options is set to true" do
-        controller.add_options_schema_for_create if controller.respond_to?(:add_options_schema_for_create)
-        controller.add_options_schema_for_show if controller.respond_to?(:add_options_schema_for_show)
+      it "builds option data but does not auto-render response unless option_schema = :true" do
+        controller.add_options_schema_for_create
+        controller.add_options_schema_for_show
         controller.render_options_schema_data if controller.respond_to?(:render_options_schema_data)
         controller.options
         expect(controller.response.body).to eq(nil)
+        expect(controller.option_schemas).to eq(
+          "POST" => JobResponseSchema.to_json_schema,
+          "GET" => JobResponseSchema.to_json_schema,
+        )
       end
     end
   end
