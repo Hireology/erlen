@@ -7,9 +7,10 @@ module Erlen; module Rails; module Filters
       create: 'POST',
       update: 'PUT',
       destroy: 'DELETE',
+      edit: 'GET',
     }
 
-    def run(action, schema)
+    def self.run(action, schema)
       option_data = {}
       request_method = ACTION_TO_REQUEST_TYPE_MAPPING[action.to_sym] || 'GET'
       option_data[request_method] = schema.to_json_schema
