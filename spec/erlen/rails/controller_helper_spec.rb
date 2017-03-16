@@ -123,10 +123,27 @@ describe Erlen::Rails::ControllerHelper do
   end
 
   describe "options data payload" do
+    context "stuff" do
+      class TestController7 < FauxController
+        include Erlen::Rails::ControllerHelper
+        def self.before_action(callback, opts = {}); end
+        options_schema :true
+
+        def options
+        end
+      end
+      let(:empty_controller) { TestController7.new }
+
+      it "handles empty options" do
+        empty_controller.render_options_schema_data
+        empty_controller.options
+        expect(empty_controller.response.body).to eq({})
+      end
+    end
+
     context "basic functionality" do
       class TestController1 < FauxController
         include Erlen::Rails::ControllerHelper
-        attr_accessor :options
         def self.before_action(callback, opts = {}); end
 
         action_schema :create, response: JobResponseSchema, options: true
@@ -163,7 +180,6 @@ describe Erlen::Rails::ControllerHelper do
     context "more complex actions" do
       class TestController4 < FauxController
         include Erlen::Rails::ControllerHelper
-        attr_accessor :options
         def self.before_action(callback, opts = {}); end
 
         action_schema :create, response: JobResponseSchema, options: true
@@ -200,7 +216,6 @@ describe Erlen::Rails::ControllerHelper do
     context "when determine if options data should be created for an action" do
       class TestController2 < FauxController
         include Erlen::Rails::ControllerHelper
-        attr_accessor :options
         def self.before_action(callback, opts = {}); end
 
         action_schema :create, response: JobResponseSchema, options: true
