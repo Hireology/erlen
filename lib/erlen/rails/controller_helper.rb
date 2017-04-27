@@ -17,10 +17,31 @@ module Erlen; module Rails
       # @param action [String] the name of the action
       # @param request [Schema::Base] the schema for request body
       # @param response [Schema::Base] the schema for response body
-      def action_schema(action, request: nil, response: nil)
+      def action_schema(action, request: nil, response: nil, options: false)
         __erlen__create_before_action(action, request, response)
         __erlen__create_after_action(action, response)
+        __erlen_create_options_response(action, response) if options && response
         nil
+      end
+
+      def options_schema(on=:false)
+        if(on == :true)
+          define_method(:render_options_schema_data) do
+            render json: (@option_schemas || {}), status: 200
+          end
+
+          send(:"before_action", :render_options_schema_data, only: :options)
+        end
+      end
+
+      def __erlen_create_options_response(action, response_schema)
+
+        define_method(:"add_options_schema_for_#{action}") do
+          new_option = Filters::CreateSchemaOptionsData.run(action, response_schema)
+          @option_schemas = (@option_schemas || {}).merge(new_option)
+        end
+
+        send(:"before_action", :"add_options_schema_for_#{action}", only: :options)
       end
 
       def __erlen__create_before_action(action, request_schema, response_schema)

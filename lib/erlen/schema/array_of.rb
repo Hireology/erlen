@@ -112,7 +112,7 @@ module Erlen; module Schema
     #                             either a schema or a primitive type.
     # @return [Base] a dynamically created class <= BaseClass
     def self.new(element_type)
-      Class.new(Base) do |klass|
+      Class.new(::Erlen::Schema::ArrayBase) do |klass|
         class << klass
 
           # Specifies the type of the element. For primitive type,
