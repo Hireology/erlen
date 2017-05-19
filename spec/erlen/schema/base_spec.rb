@@ -58,6 +58,8 @@ describe Erlen::Schema::Base do
       expect(payload.bool2).to eq(false)
       expect(payload.dt).to eq(DateTime.parse('1/1/2017'))
       expect(payload.d).to eq(Date.parse('2018-02-03'))
+=======
+>>>>>>> 3b5369b... Uses rails parameters and coerces attr type value
     end
   end
 
