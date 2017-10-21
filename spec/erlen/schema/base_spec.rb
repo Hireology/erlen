@@ -189,7 +189,7 @@ describe Erlen::Schema::Base do
       payload = TestBaseSchema.import(foo: 'bar', custom: 1)
 
       expect(payload).not_to receive(:warn)
-      expect(payload.as_json).to eq('foo' => 'bar', 'custom' => 1)
+      expect(payload.as_json).to eq('foo' => 'bar', 'custom' => 1, 'default' => 10)
     end
 
     it 'filters by using activesupport Hash modifications' do
