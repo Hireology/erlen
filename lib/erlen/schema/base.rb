@@ -60,7 +60,11 @@ module Erlen; module Schema
           obj_attribute_name = (attr.options[:alias] || attr.name).to_sym
 
           if obj.is_a? Hash
-            attr_val = obj.fetch(k, attr.options[:default])
+            if obj.has_key?(k) || attr.options.has_key?(:default)
+              attr_val = obj.fetch(k, attr.options[:default])
+            else
+              attr_val = Undefined.new
+            end
           elsif obj.class <= Base # cannot use is_a?
             begin
               attr_val = obj.send(k)
