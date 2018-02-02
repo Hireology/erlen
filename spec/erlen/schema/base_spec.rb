@@ -71,6 +71,48 @@ describe Erlen::Schema::Base do
     end
   end
 
+  describe "#attribute_provided?" do
+    it "returns true when a value is provided" do
+      schema = TestBaseSchema.new({ foo: 'bar' })
+      expect(schema.attribute_provided?(:foo)).to be_truthy
+
+      schema = TestBaseSchema.import({ foo: 'bar' })
+      expect(schema.attribute_provided?(:foo)).to be_truthy
+    end
+
+    it "returns true even when the provided value is nil" do
+      schema = TestBaseSchema.new({ foo: nil })
+      expect(schema.attribute_provided?(:foo)).to be_truthy
+
+      schema = TestBaseSchema.import({ foo: nil })
+      expect(schema.attribute_provided?(:foo)).to be_truthy
+    end
+
+    it "returns true when a default value is set" do
+      schema = TestBaseSchema.new({})
+      expect(schema.attribute_provided?(:default)).to be_truthy
+
+      schema = TestBaseSchema.import({})
+      expect(schema.attribute_provided?(:default)).to be_truthy
+    end
+
+    it "returns false for unknown values" do
+      schema = TestBaseSchema.new({ foo: 'bar' })
+      expect(schema.attribute_provided?(:baz)).to be_falsey
+
+      schema = TestBaseSchema.import({ foo: 'bar' })
+      expect(schema.attribute_provided?(:baz)).to be_falsey
+    end
+
+    it "returns false when a known value is not provided" do
+      schema = TestBaseSchema.new({ foo: 'bar' })
+      expect(schema.attribute_provided?(:custom)).to be_falsey
+
+      schema = TestBaseSchema.import({ foo: 'bar' })
+      expect(schema.attribute_provided?(:custom)).to be_falsey
+    end
+  end
+
   describe "#method_missing" do
     it "sets and gets attribute by method" do
       missing = TestBaseSchema.new({ foo: 'NOT' })

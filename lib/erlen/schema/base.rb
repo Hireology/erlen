@@ -138,6 +138,16 @@ module Erlen; module Schema
       __validate_payload
     end
 
+    # Determine whether the payload was provided the value.
+    # This is an effective way to distinguish between an
+    # explicitly set nil value and a value that wasn't provided
+    #
+    # @return [Boolean]
+    def attribute_provided?(name)
+      __has_attribute(name) &&
+        !@attributes[name].is_a?(Erlen::Undefined)
+    end
+
     # Determines if the payload is an instance of the specified schema
     # class. This overrides Object#is_a? so subclassing is not considered
     # true. The logic is actually implemented in ::Base.schema_of?:: method
