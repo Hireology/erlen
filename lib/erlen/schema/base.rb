@@ -60,7 +60,11 @@ module Erlen; module Schema
           obj_attribute_name = (attr.options[:alias] || attr.name).to_sym
 
           if obj.is_a? Hash
-            attr_val = obj.fetch(k, attr.options[:default])
+            if obj.has_key?(k) || attr.options.has_key?(:default)
+              attr_val = obj.fetch(k, attr.options[:default])
+            else
+              attr_val = Undefined.new
+            end
           elsif obj.class <= Base # cannot use is_a?
             begin
               attr_val = obj.send(k)
@@ -136,6 +140,16 @@ module Erlen; module Schema
     # @return [Boolean] true if valid, otherwise false.
     def valid?
       __validate_payload
+    end
+
+    # Determine whether the payload was provided the value.
+    # This is an effective way to distinguish between an
+    # explicitly set nil value and a value that wasn't provided
+    #
+    # @return [Boolean]
+    def attribute_provided?(name)
+      __has_attribute(name) &&
+        !@attributes[name].is_a?(Erlen::Undefined)
     end
 
     # Determines if the payload is an instance of the specified schema
