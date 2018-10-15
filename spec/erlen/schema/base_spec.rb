@@ -151,16 +151,24 @@ describe Erlen::Schema::Base do
       expect(payload.custom).to eq(1)
     end
 
-    it 'imports from an obj' do
-      payload = TestBaseSchema.import(TestObj.new)
-
-      expect(payload.foo).to eq('bar')
-      expect(payload.custom).to eq(nil)
-    end
-
     it 'defaults hash attributes' do
       payload = TestBaseSchema.import(foo: 'bar', custom: 1)
       expect(payload.default).to eq(10)
+    end
+
+    context 'aliasing' do
+      it 'imports from an obj' do
+        payload = TestBaseSchema.import(TestObj.new)
+
+        expect(payload.foo).to eq('bar')
+        expect(payload.custom).to eq(nil)
+      end
+
+      it 'imports from a hash' do
+        payload = TestBaseSchema.import(bar: 'bar')
+
+        expect(payload.foo).to eq('bar')
+      end
     end
   end
 
