@@ -53,8 +53,8 @@ module Erlen; module Schema
       #
       # @param obj [Object] any object
       # @return Base the concrete schema object.
-      def import(obj)
-        payload = self.new
+      def import(obj, context={})
+        payload = new
 
         schema_attributes.each_pair do |k, attr|
           obj_attribute_name = (attr.options[:alias] || attr.name).to_sym
@@ -76,7 +76,9 @@ module Erlen; module Schema
               attr_val = attr.options.include?(:default) ? attr.options[:default] : Undefined.new
             end
           elsif obj.respond_to?(obj_attribute_name)
-            attr_val = obj.send(obj_attribute_name)
+            method = obj.method(obj_attribute_name)
+
+            attr_val = method.arity == 1 ? method.call(context) : method.call
           else
             attr_val = attr.options.include?(:default) ? attr.options[:default] : Undefined.new
           end
@@ -273,7 +275,7 @@ module Erlen; module Schema
       !__find_attribute_name(name).nil?
     end
 
-    def __assign_attribute(name, value)
+    def __assign_attribute(name, value, context={})
       name = name.to_sym
       raise(NoAttributeError, name) unless __has_assignable_attribute(name)
 
