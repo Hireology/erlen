@@ -1,3 +1,5 @@
+require_relative './documentation'
+
 module Erlen; module Schema
   # This class is the basis for all schemas. If a schema class inherits this
   # class, it's ready to define attributes. When a schema class inherits
@@ -12,6 +14,7 @@ module Erlen; module Schema
   #       prefix to avoid conflicts with attribute names that may be defined
   #       later by the user.
   class Base
+    extend ::Erlen::Schema::Documentation
 
     # List of error messages
     attr_accessor :errors
@@ -53,15 +56,23 @@ module Erlen; module Schema
       #
       # @param obj [Object] any object
       # @return Base the concrete schema object.
-      def import(obj)
-        payload = self.new
+      def import(obj, context={})
+        payload = new
 
         schema_attributes.each_pair do |k, attr|
           obj_attribute_name = (attr.options[:alias] || attr.name).to_sym
 
           if obj.is_a? Hash
-            if obj.has_key?(k) || obj.has_key?(obj_attribute_name) || attr.options.has_key?(:default)
-              attr_val = obj[k] || obj[obj_attribute_name] || attr.options[:default]
+            if obj.key?(k)
+              attr_val = obj[k]
+            elsif obj.key?(k.to_s)
+              attr_val = obj[k.to_s]
+            elsif obj.key?(obj_attribute_name)
+              attr_val = obj[obj_attribute_name]
+            elsif obj.key?(obj_attribute_name.to_s)
+              attr_val = obj[obj_attribute_name.to_s]
+            elsif attr.options.key?(:default)
+              attr_val = attr.options[:default]
             else
               attr_val = Undefined.new
             end
@@ -72,12 +83,14 @@ module Erlen; module Schema
               attr_val = attr.options.include?(:default) ? attr.options[:default] : Undefined.new
             end
           elsif obj.respond_to?(obj_attribute_name)
-            attr_val = obj.send(obj_attribute_name)
+            method = obj.method(obj_attribute_name)
+
+            attr_val = method.arity == 1 ? method.call(context) : method.call
           else
             attr_val = attr.options.include?(:default) ? attr.options[:default] : Undefined.new
           end
 
-          attr_val = attr.type.import(attr_val) if attr.type <= Base
+          attr_val = attr.type.import(attr_val, context) if attr.type <= Base
 
           # private method so use send
           payload.send(:__assign_attribute, k, attr_val)

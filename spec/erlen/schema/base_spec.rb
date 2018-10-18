@@ -151,9 +151,29 @@ describe Erlen::Schema::Base do
       expect(payload.custom).to eq(1)
     end
 
+    it 'imports from a hash with string keys' do
+      payload = TestBaseSchema.import('foo' => 'bar', 'custom' => 1)
+
+      expect(payload.foo).to eq('bar')
+      expect(payload.custom).to eq(1)
+    end
+
+    it 'imports from an obj' do
+      payload = TestBaseSchema.import(TestObj.new)
+
+      expect(payload.foo).to eq('bar')
+      expect(payload.custom).to eq(nil)
+    end
+
     it 'defaults hash attributes' do
       payload = TestBaseSchema.import(foo: 'bar', custom: 1)
       expect(payload.default).to eq(10)
+    end
+
+    it 'imports from an obj with context' do
+      payload = TestContextSchema.import(TestObj.new, con: 'text')
+
+      expect(payload.with_arg).to eq('text')
     end
 
     context 'aliasing' do
@@ -283,7 +303,15 @@ class TestObj
   def bar
     'bar'
   end
+
+  def with_arg(opts)
+    opts[:con]
+  end
 end
 
 class TestSubSchema < TestBaseSchema
+end
+
+class TestContextSchema < TestBaseSchema
+  attribute :with_arg, String
 end
