@@ -151,6 +151,13 @@ describe Erlen::Schema::Base do
       expect(payload.custom).to eq(1)
     end
 
+    it 'imports from a hash with string keys' do
+      payload = TestBaseSchema.import('foo' => 'bar', 'custom' => 1)
+
+      expect(payload.foo).to eq('bar')
+      expect(payload.custom).to eq(1)
+    end
+
     it 'imports from an obj' do
       payload = TestBaseSchema.import(TestObj.new)
 
