@@ -142,7 +142,7 @@ module Erlen; module Schema
             end
 
             obj_elements.each do |obj|
-              payload << payload.send(:normalize_element, obj, context)
+              payload << payload.send(:normalize_element_import, obj, context)
             end
 
             payload
@@ -263,12 +263,20 @@ module Erlen; module Schema
 
         def elements; @elements end
 
-        def normalize_element(element, context={})
+        def normalize_element_import(element, context={})
+          if self.class.element_type <= Base && !(element.class <= Base)
+            self.class.element_type.import(element, context)
+          else
+            element
+          end
+        end
+
+        def normalize_element(element)
           if self.class.element_type <= Base && element.is_a?(Hash)
             self.class.element_type.new(element)
 
           elsif self.class.element_type <= Base && !(element.class <= Base)
-            self.class.element_type.import(element, context)
+            self.class.element_type.import(element)
 
           else
             element
