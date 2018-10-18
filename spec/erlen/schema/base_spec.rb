@@ -169,6 +169,12 @@ describe Erlen::Schema::Base do
       payload = TestBaseSchema.import(foo: 'bar', custom: 1)
       expect(payload.default).to eq(10)
     end
+
+    it 'imports from an obj with context' do
+      payload = TestContextSchema.import(TestObj.new, con: 'text')
+
+      expect(payload.with_arg).to eq('text')
+    end
   end
 
   describe '#to_data' do
@@ -282,7 +288,15 @@ class TestObj
   def bar
     'bar'
   end
+
+  def with_arg(opts)
+    opts[:con]
+  end
 end
 
 class TestSubSchema < TestBaseSchema
+end
+
+class TestContextSchema < TestBaseSchema
+  attribute :with_arg, String
 end
