@@ -1,3 +1,5 @@
+require_relative './documentation'
+
 module Erlen; module Schema
   # This class is the basis for all schemas. If a schema class inherits this
   # class, it's ready to define attributes. When a schema class inherits
@@ -12,6 +14,7 @@ module Erlen; module Schema
   #       prefix to avoid conflicts with attribute names that may be defined
   #       later by the user.
   class Base
+    extend ::Erlen::Schema::Documentation
 
     # List of error messages
     attr_accessor :errors
