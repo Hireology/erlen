@@ -83,7 +83,7 @@ module Erlen; module Schema
             attr_val = attr.options.include?(:default) ? attr.options[:default] : Undefined.new
           end
 
-          attr_val = attr.type.import(attr_val) if attr.type <= Base
+          attr_val = attr.type.import(attr_val, context) if attr.type <= Base
 
           # private method so use send
           payload.send(:__assign_attribute, k, attr_val)
@@ -275,7 +275,7 @@ module Erlen; module Schema
       !__find_attribute_name(name).nil?
     end
 
-    def __assign_attribute(name, value, context={})
+    def __assign_attribute(name, value)
       name = name.to_sym
       raise(NoAttributeError, name) unless __has_assignable_attribute(name)
 
