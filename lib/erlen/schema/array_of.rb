@@ -132,7 +132,7 @@ module Erlen; module Schema
           #
           # @param array of objs [Object] any objects
           # @return Base the concrete schema object.
-          def import(obj_elements)
+          def import(obj_elements, context={})
             payload = self.new
 
             if obj_elements.class <= Base && obj_elements.class.respond_to?(:element_type)
@@ -142,7 +142,7 @@ module Erlen; module Schema
             end
 
             obj_elements.each do |obj|
-              payload << obj
+              payload << payload.send(:normalize_element, obj, context)
             end
 
             payload
@@ -263,12 +263,12 @@ module Erlen; module Schema
 
         def elements; @elements end
 
-        def normalize_element(element)
+        def normalize_element(element, context={})
           if self.class.element_type <= Base && element.is_a?(Hash)
             self.class.element_type.new(element)
 
           elsif self.class.element_type <= Base && !(element.class <= Base)
-            self.class.element_type.import(element)
+            self.class.element_type.import(element, context)
 
           else
             element

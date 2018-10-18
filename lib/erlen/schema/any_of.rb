@@ -22,9 +22,9 @@ module Erlen; module Schema
             "AnyOf#{self.allowed_schemas.map {|s| s.name}.join("Or")}"
           end
 
-          def import(obj)
-            schema = allowed_schemas.find do |s| s.import(obj).valid? end
-            payload = schema.import(obj) if schema
+          def import(obj, context={})
+            schema = allowed_schemas.find { |s| s.import(obj, context).valid? }
+            payload = schema.import(obj, context) if schema
             hash = payload.to_data if payload
             new(hash)
           end
