@@ -39,7 +39,7 @@ module Erlen; module Schema
       elsif attr_type == String
         "\"#{attr_name.titleize.upcase}\""
       elsif [Time, Date].include? attr_type
-        "\"#{Time.current}\""
+        "\"#{Time.now}\""
       elsif attr_type == Boolean
         rand(2) == 1
       elsif attr_type < Base && attr_type.respond_to?(:element_type)
