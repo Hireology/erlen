@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    erlen (0.1.11)
+    erlen (0.1.12)
 
 GEM
   remote: https://rubygems.org/
@@ -88,4 +88,4 @@ DEPENDENCIES
   simplecov
 
 BUNDLED WITH
-   1.15.4
+   1.16.1
