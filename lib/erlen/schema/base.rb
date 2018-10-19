@@ -67,6 +67,10 @@ module Erlen; module Schema
               attr_val = obj[k]
             elsif obj.key?(k.to_s)
               attr_val = obj[k.to_s]
+            elsif obj.key?(obj_attribute_name)
+              attr_val = obj[obj_attribute_name]
+            elsif obj.key?(obj_attribute_name.to_s)
+              attr_val = obj[obj_attribute_name.to_s]
             elsif attr.options.key?(:default)
               attr_val = attr.options[:default]
             else

@@ -175,6 +175,21 @@ describe Erlen::Schema::Base do
 
       expect(payload.with_arg).to eq('text')
     end
+
+    context 'aliasing' do
+      it 'imports from an obj' do
+        payload = TestBaseSchema.import(TestObj.new)
+
+        expect(payload.foo).to eq('bar')
+        expect(payload.custom).to eq(nil)
+      end
+
+      it 'imports from a hash' do
+        payload = TestBaseSchema.import(bar: 'bar')
+
+        expect(payload.foo).to eq('bar')
+      end
+    end
   end
 
   describe '#to_data' do
