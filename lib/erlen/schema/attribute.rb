@@ -59,7 +59,7 @@ module Erlen; module Schema
         raise ValidationError.new("#{name}: #{value} is not #{type.name}")
       end
 
-      if !validation.nil? && !validation.call(value)
+      if !validation.nil? && !validation.call(value.is_a?(Undefined) ? nil : value)
         raise ValidationError.new("#{name} is not valid")
       end
     end

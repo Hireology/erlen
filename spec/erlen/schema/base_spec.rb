@@ -20,6 +20,10 @@ class TestTypeSchema < Erlen::Schema::Base
   attribute :d, Date
 end
 
+class TestCollectionSchema < Erlen::Schema::Base
+  collection :coll_attr, String, { required: true } { |p| p.count > 0 }
+end
+
 class TestObj
   def bar
     'bar'
@@ -283,6 +287,16 @@ describe Erlen::Schema::Base do
 
       expect(data['coll_attr']).to include('foo')
       expect(data['coll_attr']).to include('bar')
+    end
+
+    it 'runs collections validations' do
+      payload = TestCollectionSchema.import(coll_attr: [])
+      expect(payload.valid?).to be_falsey
+      expect(payload.errors).to eq(['coll_attr is not valid'])
+
+      payload = TestCollectionSchema.import({})
+      expect(payload.valid?).to be_falsey
+      expect(payload.errors).to eq(['coll_attr is not valid'])
     end
   end
 

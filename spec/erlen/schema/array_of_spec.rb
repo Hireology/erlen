@@ -1,11 +1,9 @@
 require 'spec_helper'
 
 describe Erlen::Schema::ArrayOf do
-  subject { described_class.new(TestArraySchema) }
-
   describe 'import' do
     it 'imports hashes into the base schema' do
-      payload = subject.import(
+      payload = TestArraySchema.import_array(
         [
           { 'foo' => 'bar', custom: 1, other: true },
           { 'foo' => 'baz', custom: 2, 'something else' => false }
@@ -22,7 +20,7 @@ describe Erlen::Schema::ArrayOf do
 
   describe 'new' do
     it 'creates from hashes as expected' do
-      payload = subject.new(
+      payload = TestArraySchema.new_array(
         [
           { 'foo' => 'bar', custom: 1 },
           { 'foo' => 'baz', custom: 2 }
@@ -38,7 +36,7 @@ describe Erlen::Schema::ArrayOf do
 
     it 'strictly interpets hashes' do
       expect do
-        subject.new([{ 'foo' => 'bar', other_value: 'fail' }])
+        TestArraySchema.new_array([{ 'foo' => 'bar', other_value: 'fail' }])
       end.to raise_error(Erlen::NoAttributeError)
     end
   end
