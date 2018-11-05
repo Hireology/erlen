@@ -1,5 +1,46 @@
 require 'spec_helper'
 
+class TestBaseSchema < Erlen::Schema::Base
+  attribute :foo, String, { alias: :bar }
+  attribute :custom, Integer
+  attribute :default, Integer, default: 10
+  collection :coll_attr, String
+
+  validate("Error Message") { |s| s.foo == 'bar' || s.foo == 1 }
+end
+
+class TestTypeSchema < Erlen::Schema::Base
+  attribute :int, Integer
+  attribute :flt, Float
+  attribute :bool, Boolean
+  attribute :bool2, Boolean
+  attribute :bool3, Boolean
+  attribute :bool4, Boolean
+  attribute :dt, DateTime
+  attribute :d, Date
+end
+
+class TestCollectionSchema < Erlen::Schema::Base
+  collection :coll_attr, String, { required: true } { |p| p.count > 0 }
+end
+
+class TestObj
+  def bar
+    'bar'
+  end
+
+  def with_arg(opts)
+    opts[:con]
+  end
+end
+
+class TestSubSchema < TestBaseSchema
+end
+
+class TestContextSchema < TestBaseSchema
+  attribute :with_arg, String
+end
+
 describe Erlen::Schema::Base do
   subject { described_class }
 
@@ -192,6 +233,28 @@ describe Erlen::Schema::Base do
     end
   end
 
+  describe '#import_array' do
+    it 'takes in an array and returns a payload' do
+      payload = TestBaseSchema.import_array([TestObj.new])
+
+      expect(payload.class.element_type).to eq(TestBaseSchema)
+
+      data = payload.to_data
+      expect(data[0]['foo']).to eq('bar')
+    end
+  end
+
+  describe '#new_array' do
+    it 'takes in an array and returns a payload' do
+      payload = TestBaseSchema.new_array([TestObj.new])
+
+      expect(payload.class.element_type).to be(TestBaseSchema)
+
+      data = payload.to_data
+      expect(data[0]['foo']).to eq('bar')
+    end
+  end
+
   describe '#to_data' do
     it 'converts to hash' do
       payload = TestBaseSchema.import(TestObj.new)
@@ -210,10 +273,30 @@ describe Erlen::Schema::Base do
     end
 
     it 'does not include undefined attribute' do
-      payload = TestBaseSchema.new()
+      payload = TestBaseSchema.new
       data = payload.to_data
       expect(data.include?('foo')).to be_falsey
       expect(data.include?('custom')).to be_falsey
+    end
+  end
+
+  describe 'collection' do
+    it 'initializes the attribute as an array' do
+      payload = TestBaseSchema.import(coll_attr: %w[foo bar])
+      data = payload.to_data
+
+      expect(data['coll_attr']).to include('foo')
+      expect(data['coll_attr']).to include('bar')
+    end
+
+    it 'runs collections validations' do
+      payload = TestCollectionSchema.import(coll_attr: [])
+      expect(payload.valid?).to be_falsey
+      expect(payload.errors).to eq(['coll_attr is not valid'])
+
+      payload = TestCollectionSchema.import({})
+      expect(payload.valid?).to be_falsey
+      expect(payload.errors).to eq(['coll_attr is not valid'])
     end
   end
 
@@ -268,7 +351,12 @@ describe Erlen::Schema::Base do
       payload = TestBaseSchema.import(foo: 'bar', custom: 1)
 
       expect(payload).not_to receive(:warn)
-      expect(payload.as_json).to eq('foo' => 'bar', 'custom' => 1, 'default' => 10)
+      expect(payload.as_json).to eq(
+        'foo' => 'bar',
+        'custom' => 1,
+        'default' => 10,
+        'coll_attr' => [],
+      )
     end
 
     it 'filters by using activesupport Hash modifications' do
@@ -278,40 +366,4 @@ describe Erlen::Schema::Base do
       expect(payload.as_json(only: 'foo')).to eq('foo' => 'bar')
     end
   end
-end
-
-class TestBaseSchema < Erlen::Schema::Base
-  attribute :foo, String, { alias: :bar }
-  attribute :custom, Integer
-  attribute :default, Integer, default: 10
-
-  validate("Error Message") { |s| s.foo == 'bar' || s.foo == 1 }
-end
-
-class TestTypeSchema < Erlen::Schema::Base
-  attribute :int, Integer
-  attribute :flt, Float
-  attribute :bool, Boolean
-  attribute :bool2, Boolean
-  attribute :bool3, Boolean
-  attribute :bool4, Boolean
-  attribute :dt, DateTime
-  attribute :d, Date
-end
-
-class TestObj
-  def bar
-    'bar'
-  end
-
-  def with_arg(opts)
-    opts[:con]
-  end
-end
-
-class TestSubSchema < TestBaseSchema
-end
-
-class TestContextSchema < TestBaseSchema
-  attribute :with_arg, String
 end

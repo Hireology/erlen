@@ -34,10 +34,23 @@ module Erlen; module Schema
       # @param type [Class] it must be either a primitive type or a
       #                     Base class.
       # @param opts [Hash, nil] options
-      # @param validation [Proc, nil] optinal validation block.
-      def attribute(name, type, opts={}, &validation)
+      # @param validation [Proc, nil] optional validation block.
+      def attribute(name, type, opts = {}, &validation)
         attr = Attribute.new(name.to_sym, type, opts, &validation)
         schema_attributes[name.to_sym] = attr
+      end
+
+      # Defines a collection for the schema. Must specify the type. If
+      # validation block is specified, the block will be executed at
+      # validation.
+      #
+      # @param name [Symbol] the name of attribute
+      # @param type [Class] class of array elements, it must be either a
+      #                     primitive type or a Base class.
+      # @param opts [Hash, nil] options
+      # @param validation [Proc, nil] optional validation block.
+      def collection(name, array_type, opts = {}, &validation)
+        attribute(name, ArrayOf.new(array_type), opts, &validation)
       end
 
       # Defines a custom validation block. Must specify message which is
@@ -97,6 +110,27 @@ module Erlen; module Schema
         end
 
         payload
+      end
+
+      # Expects an array of objects and will wrap current class in ArrayOf and
+      # return payload.
+      #
+      # @param obj [Array] array of objects or hashes
+      # @param context [Hash] hash of objects providing context for functions
+      # @return Base the concrete schema object.
+      def import_array(obj_array, context={})
+        ArrayOf.new(self).import(obj_array, context)
+      end
+
+      # Expects an array of objects and will wrap current class in ArrayOf and
+      # return payload. Uses the new function to initialize object so will be more
+      # stringent on data requirements.
+      #
+      # @param obj [Array] array of objects or hashes
+      # @param context [Hash] hash of objects providing context for functions
+      # @return Base the concrete schema object.
+      def new_array(obj_array)
+        ArrayOf.new(self).new(obj_array)
       end
 
       def inherited(klass)
