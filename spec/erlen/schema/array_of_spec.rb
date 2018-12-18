@@ -40,6 +40,32 @@ describe Erlen::Schema::ArrayOf do
       end.to raise_error(Erlen::NoAttributeError)
     end
   end
+
+  describe '#inject' do
+    let(:payload) do
+      TestArraySchema.new_array(
+        [
+          { 'foo' => 'bar', custom: 1 },
+          { 'foo' => 'baz', custom: 2 }
+        ]
+      )
+    end
+
+    it 'works with a numeric accumulator' do
+      result = payload.inject(0) { |memo, var| memo + var.custom }
+      expect(result).to eq(3)
+    end
+
+    it 'works with an array accumulator' do
+      result = payload.inject([]) { |memo, var| memo << var.foo }
+      expect(result).to eq(%w[bar baz])
+    end
+
+    it 'is equivalent to reduce' do
+      expect(payload.inject(0) { |memo, var| memo + var.custom }).to \
+        eq(payload.reduce(0) { |memo, var| memo + var.custom })
+    end
+  end
 end
 
 class TestArraySchema < Erlen::Schema::Base

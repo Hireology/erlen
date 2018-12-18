@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module Erlen; module Schema
   # This class dynamically generates a concrete schema *class* that
   # represents a collection type with a specific element type. The payload
@@ -225,6 +226,12 @@ module Erlen; module Schema
               schema.element_type == self.class.element_type
         end
 
+        %i[inject reduce].each do |mname|
+          define_method(mname) do |memo, &blk|
+            @elements.send(mname, memo, &blk)
+          end
+        end
+
         # Dynamically create methods that will proxy to elements
         METHODS_TO_PROXY.each do |mname|
           define_method(mname) do |*args, &blk|
@@ -248,6 +255,7 @@ module Erlen; module Schema
         METHODS_TO_PROXY_BINARY_OP.each do |mname|
           define_method(mname) do |other, &blk|
             raise InvalidPayloadError unless other.is_a?(self.class)
+
             @elements.send(mname, other.send(:elements), &blk)
           end
         end
@@ -255,6 +263,7 @@ module Erlen; module Schema
         METHODS_TO_PROXY_BINARY_OP_AND_RETURN_NEW.each do |mname|
           define_method(mname) do |other, &blk|
             raise InvalidPayloadError unless other.is_a?(self.class)
+
             self.class.new(@elements.send(mname, other.send(:elements), &blk))
           end
         end
