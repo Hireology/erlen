@@ -59,6 +59,144 @@ describe Erlen::Schema::ArrayOf do
       expect(payload.any?).to be_truthy
     end
   end
+
+  describe '#inject' do
+    let(:payload) do
+      TestArraySchema.new_array(
+        [
+          { 'foo' => 'bar', custom: 1 },
+          { 'foo' => 'baz', custom: 2 }
+        ]
+      )
+    end
+
+    it 'works with a numeric accumulator' do
+      result = payload.inject(0) { |memo, var| memo + var.custom }
+      expect(result).to eq(3)
+    end
+
+    it 'works with an array accumulator' do
+      result = payload.inject([]) { |memo, var| memo << var.foo }
+      expect(result).to eq(%w[bar baz])
+    end
+
+    it 'is equivalent to reduce' do
+      expect(payload.inject(0) { |memo, var| memo + var.custom }).to \
+        eq(payload.reduce(0) { |memo, var| memo + var.custom })
+    end
+  end
+
+  describe '#one?' do
+    it 'returns false for an empty array' do
+      payload = TestArraySchema.import_array([])
+
+      expect(payload.one?).to be(false)
+    end
+
+    it 'returns false if no elements match' do
+      payload = TestArraySchema.import_array(
+        [
+          { 'foo' => 'bar', custom: 1, other: true },
+          { 'foo' => 'baz', custom: 2, 'something else' => false }
+        ]
+      )
+
+      expect(payload.one? { |item| item.custom == 3 }).to be(false)
+    end
+
+    it 'returns true if one element matches' do
+      payload = TestArraySchema.import_array(
+        [
+          { 'foo' => 'bar', custom: 1, other: true },
+          { 'foo' => 'baz', custom: 2, 'something else' => false }
+        ]
+      )
+
+      expect(payload.one? { |item| item.custom == 2 }).to be(true)
+    end
+
+    it 'returns false if more than one element matches' do
+      payload = TestArraySchema.import_array(
+        [
+          { 'foo' => 'bar', custom: 2, other: true },
+          { 'foo' => 'baz', custom: 2, 'something else' => false }
+        ]
+      )
+
+      expect(payload.one? { |item| item.custom == 2 }).to be(false)
+    end
+  end
+
+  describe '#none?' do
+    it 'returns true for an empty array' do
+      payload = TestArraySchema.import_array([])
+
+      expect(payload.none?).to be(true)
+    end
+
+    it 'returns false if there are any matches' do
+      payload = TestArraySchema.import_array(
+        [
+          { 'foo' => 'bar', custom: 1, other: true },
+          { 'foo' => 'baz', custom: 2, 'something else' => false }
+        ]
+      )
+
+      expect(payload.none? { |item| item.custom == 1 }).to be(false)
+    end
+
+    it 'returns true if there are no matches' do
+      payload = TestArraySchema.import_array(
+        [
+          { 'foo' => 'bar', custom: 1, other: true },
+          { 'foo' => 'baz', custom: 2, 'something else' => false }
+        ]
+      )
+
+      expect(payload.none? { |item| item.custom == 3 }).to be(true)
+    end
+  end
+
+  describe '#all?' do
+    it 'returns true for an empty array (vacuously true)' do
+      payload = TestArraySchema.import_array([])
+
+      expect(payload.all?).to be(true)
+    end
+
+    it 'returns false if not every item matches' do
+      payload = TestArraySchema.import_array(
+        [
+          { 'foo' => 'bar', custom: 1, other: true },
+          { 'foo' => 'baz', custom: 2, 'something else' => false }
+        ]
+      )
+
+      expect(payload.all? { |item| item.custom == 1 }).to be(false)
+    end
+
+    it 'returns false if there are no matches' do
+      payload = TestArraySchema.import_array(
+        [
+          { 'foo' => 'bar', custom: 1, other: true },
+          { 'foo' => 'baz', custom: 2, 'something else' => false }
+        ]
+      )
+
+      expect(payload.all? { |item| item.custom == 3 }).to be(false)
+    end
+
+    it 'returns true if every element matches' do
+      payload = TestArraySchema.import_array(
+        [
+          { 'foo' => 'bar', custom: 1, other: true },
+          { 'foo' => 'baz', custom: 2, 'something else' => false }
+        ]
+      )
+
+      expect(payload.all? { |item| item.custom < 3 }).to be(true)
+    end
+  end
 end
 
 class TestArraySchema < Erlen::Schema::Base
