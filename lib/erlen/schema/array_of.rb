@@ -14,7 +14,7 @@ module Erlen; module Schema
     # List of methods that we simply proxy
     METHODS_TO_PROXY = [
       :[],
-      :any,
+      :any?,
       :at,
       :bsearch,
       :count,

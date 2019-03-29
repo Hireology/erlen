@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 describe Erlen::Schema::ArrayOf do
@@ -38,6 +40,23 @@ describe Erlen::Schema::ArrayOf do
       expect do
         TestArraySchema.new_array([{ 'foo' => 'bar', other_value: 'fail' }])
       end.to raise_error(Erlen::NoAttributeError)
+    end
+  end
+
+  describe 'any?' do
+    it 'returns false if array is empty' do
+      payload = TestArraySchema.import_array([])
+      expect(payload.any?).to be_falsy
+    end
+
+    it 'returns true if array is not empty' do
+      payload = TestArraySchema.import_array(
+        [
+          { 'foo' => 'bar', custom: 1, other: true },
+          { 'foo' => 'baz', custom: 2, 'something else' => false }
+        ]
+      )
+      expect(payload.any?).to be_truthy
     end
   end
 
