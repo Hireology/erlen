@@ -14,6 +14,7 @@ module Erlen; module Schema
     # List of methods that we simply proxy
     METHODS_TO_PROXY = [
       :[],
+      :all?,
       :any?,
       :at,
       :bsearch,
@@ -27,10 +28,14 @@ module Erlen; module Schema
       :find_index,
       :include?,
       :index,
+      :inject,
       :inspect,
       :join,
       :length,
+      :none?,
+      :one?,
       :rindex,
+      :reduce,
       :size,
       :slice,
       :to_a,
@@ -224,12 +229,6 @@ module Erlen; module Schema
         def is_a?(schema)
           schema <= Base && schema.respond_to?(:element_type) &&
               schema.element_type == self.class.element_type
-        end
-
-        %i[inject reduce].each do |mname|
-          define_method(mname) do |memo, &blk|
-            @elements.send(mname, memo, &blk)
-          end
         end
 
         # Dynamically create methods that will proxy to elements
