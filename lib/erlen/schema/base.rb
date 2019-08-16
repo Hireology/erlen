@@ -279,6 +279,9 @@ module Erlen; module Schema
           arr << [attr.name, val]
         end
       end
+      self.class.schema_derived_attributes.each do |k, attr|
+        arr << [attr.name, self.class.schema_derived_attributes[k].derive_value(self)]
+      end
       Hash[arr]
     end
 

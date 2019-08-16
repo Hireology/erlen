@@ -180,7 +180,7 @@ describe Erlen::Schema::Base do
     end
 
     it 'gets derived_attribute by method' do
-      missing = TestBaseSchema.new({ foo: 'NOT' })
+      missing = TestBaseSchema.new(foo: 'NOT')
 
       expect(missing.derived_attr).to eq('NOT10')
     end
@@ -278,8 +278,14 @@ describe Erlen::Schema::Base do
       payload = TestBaseSchema.import(TestObj.new)
       data = payload.to_data
 
-      expect(data['foo']).to eq('bar')
-      expect(data['custom']).to eq(nil)
+      expect(data['derived_attr']).to eq('bar10')
+    end
+
+    it 'includes derived attribute' do
+      payload = TestBaseSchema.new
+      data = payload.to_data
+      expect(data.include?('foo')).to be_falsey
+      expect(data.include?('custom')).to be_falsey
     end
 
     it 'does not include undefined attribute' do
@@ -366,6 +372,7 @@ describe Erlen::Schema::Base do
         'custom' => 1,
         'default' => 10,
         'coll_attr' => [],
+        'derived_attr' => 'bar10'
       )
     end
 
@@ -375,24 +382,5 @@ describe Erlen::Schema::Base do
       expect(payload).not_to receive(:warn)
       expect(payload.as_json(only: 'foo')).to eq('foo' => 'bar')
     end
-  end
-
-  describe 'derived_attribute' do
-    # it 'initializes the attribute as an array' do
-    #   payload = TestBaseSchema.import(foo: 'bar')
-    #   data = payload.to_data
-
-    #   expect(data['derived_attr']).to eq('foo10')
-    # end
-
-    # it 'runs collections validations' do
-    #   payload = TestCollectionSchema.import(coll_attr: [])
-    #   expect(payload.valid?).to be_falsey
-    #   expect(payload.errors).to eq(['coll_attr is not valid'])
-
-    #   payload = TestCollectionSchema.import({})
-    #   expect(payload.valid?).to be_falsey
-    #   expect(payload.errors).to eq(['coll_attr is not valid'])
-    # end
   end
 end
