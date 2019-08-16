@@ -5,6 +5,10 @@ class TestBaseSchema < Erlen::Schema::Base
   attribute :custom, Integer
   attribute :default, Integer, default: 10
   collection :coll_attr, String
+  derived_attribute :derived_attr, String do |s|
+    "#{s.foo}#{s.default}"
+  end
+  # derived_attribute :derived_attr, String, { |schema| "#{s.foo}#{s.default}" }
 
   validate("Error Message") { |s| s.foo == 'bar' || s.foo == 1 }
 end
@@ -173,6 +177,12 @@ describe Erlen::Schema::Base do
       expect(missing.respond_to?(:bar)).to be_truthy
       expect(missing.respond_to?(:foo=)).to be_truthy
       expect(missing.respond_to?(:bar=)).to be_falsey
+    end
+
+    it 'gets derived_attribute by method' do
+      missing = TestBaseSchema.new({ foo: 'NOT' })
+
+      expect(missing.derived_attr).to eq('NOT10')
     end
   end
 
@@ -365,5 +375,24 @@ describe Erlen::Schema::Base do
       expect(payload).not_to receive(:warn)
       expect(payload.as_json(only: 'foo')).to eq('foo' => 'bar')
     end
+  end
+
+  describe 'derived_attribute' do
+    # it 'initializes the attribute as an array' do
+    #   payload = TestBaseSchema.import(foo: 'bar')
+    #   data = payload.to_data
+
+    #   expect(data['derived_attr']).to eq('foo10')
+    # end
+
+    # it 'runs collections validations' do
+    #   payload = TestCollectionSchema.import(coll_attr: [])
+    #   expect(payload.valid?).to be_falsey
+    #   expect(payload.errors).to eq(['coll_attr is not valid'])
+
+    #   payload = TestCollectionSchema.import({})
+    #   expect(payload.valid?).to be_falsey
+    #   expect(payload.errors).to eq(['coll_attr is not valid'])
+    # end
   end
 end

@@ -26,6 +26,9 @@ module Erlen; module Schema
       # List of validation procs to run at valid?
       attr_accessor :validator_procs
 
+      # List of schema derived attribute definitions
+      attr_accessor :schema_derived_attributes
+
       # Defines an attribute for the schema. Must specify the type. If
       # validation block is specified, the block will be executed at
       # validation.
@@ -61,6 +64,17 @@ module Erlen; module Schema
       # @param blk [Proc] the validation code block
       def validate(message, &blk)
         validator_procs << [message, blk]
+      end
+
+      # Defines a derived attribute for the schema. Must specify name. Must
+      # specify code block to derive the value
+      #
+      # @param name [String, Symbol] a simple name for the derived attribute
+      # @param blk [Proc] the code block that derives the value from the
+      # other schema attributes
+      def derived_attribute(name, type, blk)
+        attr = DerivedAttribute.new(name, type, blk)
+        schema_derived_attributes[name.to_sym] = attr
       end
 
       # Imports from an object (or a payload). This is different from
@@ -138,6 +152,8 @@ module Erlen; module Schema
         klass.schema_attributes = attrs
         procs = self.validator_procs.nil? ? [] : self.validator_procs.clone
         klass.validator_procs = procs
+        derived_attrs = schema_derived_attributes.nil? ? {} : schema_derived_attributes.clone
+        klass.schema_derived_attributes = derived_attrs
       end
 
       # Determines whether payload is an instance of this schema.
@@ -223,6 +239,8 @@ module Erlen; module Schema
     def method_missing(mname, value=nil)
       if mname.to_s.end_with?('=')
         __assign_attribute(mname[0..-2].to_sym, value)
+      elsif __has_derived_attribute(mname.to_sym)
+        __find_derived_attribute_value_by_name(mname.to_sym)
       else
         __find_attribute_value_by_name(mname.to_sym)
       end
@@ -233,7 +251,7 @@ module Erlen; module Schema
         # The lookup is slightly different for assignment
         __has_assignable_attribute(mname[0..-2].to_sym)
       else
-        __has_attribute(mname.to_sym)
+        __has_attribute(mname.to_sym) || __has_derived_attribute(mname.to_sym)
       end
     end
 
@@ -316,6 +334,10 @@ module Erlen; module Schema
       !__find_attribute_name(name).nil?
     end
 
+    def __has_derived_attribute(name)
+      self.class.schema_derived_attributes.key?(name)
+    end
+
     def __assign_attribute(name, value)
       name = name.to_sym
       raise(NoAttributeError, name) unless __has_assignable_attribute(name)
@@ -378,5 +400,11 @@ module Erlen; module Schema
       val.is_a?(Undefined) ? nil : val
     end
 
+    def __find_derived_attribute_value_by_name(name)
+      val = self.class.schema_derived_attributes[name].derive_value(self)
+
+      # We don't want to expose Undefined to the outside world, nil it the logical equal
+      val.is_a?(Undefined) ? nil : val
+    end
   end
 end; end
