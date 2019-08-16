@@ -72,7 +72,7 @@ module Erlen; module Schema
       # @param name [String, Symbol] a simple name for the derived attribute
       # @param blk [Proc] the code block that derives the value from the
       # other schema attributes
-      def derived_attribute(name, type, blk)
+      def derived_attribute(name, type, &blk)
         attr = DerivedAttribute.new(name, type, blk)
         schema_derived_attributes[name.to_sym] = attr
       end
