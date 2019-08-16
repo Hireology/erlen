@@ -8,7 +8,6 @@ class TestBaseSchema < Erlen::Schema::Base
   derived_attribute :derived_attr, String do |s|
     "#{s.foo}#{s.default}"
   end
-  # derived_attribute :derived_attr, String, { |schema| "#{s.foo}#{s.default}" }
 
   validate("Error Message") { |s| s.foo == 'bar' || s.foo == 1 }
 end
@@ -104,6 +103,12 @@ describe Erlen::Schema::Base do
       expect(payload.dt).to eq(DateTime.parse('1/1/2017'))
       expect(payload.d).to eq(Date.parse('2018-02-03'))
     end
+
+    it 'throws NoAttributeError exception if attempt to set derived attr' do
+      expect do
+        TestBaseSchema.new(derived_attr: 'should_throw_error')
+      end.to raise_error(Erlen::NoAttributeError)
+    end
   end
 
   describe "#valid?" do
@@ -183,6 +188,14 @@ describe Erlen::Schema::Base do
       missing = TestBaseSchema.new(foo: 'NOT')
 
       expect(missing.derived_attr).to eq('NOT10')
+    end
+
+    it 'throws NoAttributeError exception if attempt to set derived attr' do
+      missing = TestBaseSchema.new(foo: 'NOT')
+
+      expect do
+        missing.derived_attr = 'should_throw_error'
+      end.to raise_error(Erlen::NoAttributeError)
     end
   end
 
