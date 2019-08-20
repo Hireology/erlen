@@ -291,19 +291,22 @@ describe Erlen::Schema::Base do
       payload = TestBaseSchema.import(TestObj.new)
       data = payload.to_data
 
+      expect(data['foo']).to eq('bar')
+      expect(data['custom']).to eq(nil)
       expect(data['derived_attr']).to eq('bar10')
     end
 
     it 'includes derived attribute' do
       payload = TestBaseSchema.new
       data = payload.to_data
-      expect(data.include?('foo')).to be_falsey
-      expect(data.include?('custom')).to be_falsey
+
+      expect(data.include?('derived_attr')).to be_truthy
     end
 
     it 'does not include undefined attribute' do
       payload = TestBaseSchema.new
       data = payload.to_data
+      
       expect(data.include?('foo')).to be_falsey
       expect(data.include?('custom')).to be_falsey
     end

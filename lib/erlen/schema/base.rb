@@ -69,7 +69,9 @@ module Erlen; module Schema
       # Defines a derived attribute for the schema. Must specify name. Must
       # specify code block to derive the value
       #
-      # @param name [String, Symbol] a simple name for the derived attribute
+      # @param name [Symbol] the name of attribute
+      # @param type [Class] it must be either a primitive type or a
+      #                     Base class.
       # @param blk [Proc] the code block that derives the value from the
       # other schema attributes
       def derived_attribute(name, type, &blk)
@@ -405,9 +407,6 @@ module Erlen; module Schema
 
     def __find_derived_attribute_value_by_name(name)
       val = self.class.schema_derived_attributes[name].derive_value(self)
-
-      # We don't want to expose Undefined to the outside world, nil it the logical equal
-      val.is_a?(Undefined) ? nil : val
     end
   end
 end; end
