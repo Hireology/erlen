@@ -5,6 +5,9 @@ class TestBaseSchema < Erlen::Schema::Base
   attribute :custom, Integer
   attribute :default, Integer, default: 10
   collection :coll_attr, String
+  derived_attribute :derived_attr, String do |s|
+    "#{s.foo}#{s.default}"
+  end
 
   validate("Error Message") { |s| s.foo == 'bar' || s.foo == 1 }
 end
@@ -100,6 +103,12 @@ describe Erlen::Schema::Base do
       expect(payload.dt).to eq(DateTime.parse('1/1/2017'))
       expect(payload.d).to eq(Date.parse('2018-02-03'))
     end
+
+    it 'throws NoAttributeError exception if attempt to set derived attr' do
+      expect do
+        TestBaseSchema.new(derived_attr: 'should_throw_error')
+      end.to raise_error(Erlen::NoAttributeError)
+    end
   end
 
   describe "#valid?" do
@@ -173,6 +182,20 @@ describe Erlen::Schema::Base do
       expect(missing.respond_to?(:bar)).to be_truthy
       expect(missing.respond_to?(:foo=)).to be_truthy
       expect(missing.respond_to?(:bar=)).to be_falsey
+    end
+
+    it 'gets derived_attribute by method' do
+      missing = TestBaseSchema.new(foo: 'NOT')
+
+      expect(missing.derived_attr).to eq('NOT10')
+    end
+
+    it 'throws NoAttributeError exception if attempt to set derived attr' do
+      missing = TestBaseSchema.new(foo: 'NOT')
+
+      expect do
+        missing.derived_attr = 'should_throw_error'
+      end.to raise_error(Erlen::NoAttributeError)
     end
   end
 
@@ -270,11 +293,20 @@ describe Erlen::Schema::Base do
 
       expect(data['foo']).to eq('bar')
       expect(data['custom']).to eq(nil)
+      expect(data['derived_attr']).to eq('bar10')
+    end
+
+    it 'includes derived attribute' do
+      payload = TestBaseSchema.new
+      data = payload.to_data
+
+      expect(data.include?('derived_attr')).to be_truthy
     end
 
     it 'does not include undefined attribute' do
       payload = TestBaseSchema.new
       data = payload.to_data
+      
       expect(data.include?('foo')).to be_falsey
       expect(data.include?('custom')).to be_falsey
     end
@@ -356,6 +388,7 @@ describe Erlen::Schema::Base do
         'custom' => 1,
         'default' => 10,
         'coll_attr' => [],
+        'derived_attr' => 'bar10'
       )
     end
 
